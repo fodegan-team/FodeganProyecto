@@ -40,9 +40,10 @@
         </div>
       </section>
 
-      <footer class="footer">
-        © 2026 FODEGAN · Todos los derechos reservados
-      </footer>
+    <footer class="footer">
+        © 2026 FODEGAN · Todos los derechos reservados ·
+        <span style="color: #D4A373;">Plataforma Ganadera</span>
+    </footer>
 
     </main>
   </div>

@@ -1,0 +1,59 @@
+require('dotenv').config()
+const express      = require('express')
+const cors         = require('cors')
+const helmet       = require('helmet')
+const rateLimit    = require('express-rate-limit')
+const cookieParser = require('cookie-parser')
+
+const authRoutes = require('./routes/auth.routes')
+
+const app  = require('express')()
+const PORT = process.env.PORT || 3000
+
+const server = express()
+
+server.use(helmet())
+server.use(cors({
+  origin:      process.env.FRONTEND_URL || 'http://localhost:5173',
+  credentials: true,
+  methods:     ['GET', 'POST', 'PUT', 'DELETE']
+}))
+
+server.use(express.json({ limit: '10kb' }))
+server.use(express.urlencoded({ extended: true }))
+server.use(cookieParser())
+
+server.use('/api', rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max:      100,
+  message:  { error: 'Demasiadas peticiones. Intenta más tarde.' }
+}))
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max:      5,
+  message:  { error: 'Demasiados intentos. Espera 15 minutos.' }
+})
+server.use('/api/auth/login',    authLimiter)
+server.use('/api/auth/register', authLimiter)
+
+server.use('/api/auth', authRoutes)
+
+server.get('/api/health', (_req, res) => {
+  res.json({ status: 'OK', app: 'FODEGAN API v0.1' })
+})
+
+server.use('*', (_req, res) => {
+  res.status(404).json({ error: 'Ruta no encontrada' })
+})
+
+server.use((err, _req, res, _next) => {
+  console.error(err.stack)
+  res.status(500).json({ error: 'Error interno del servidor' })
+})
+
+server.listen(PORT, () => {
+  console.log(`✅ FODEGAN API corriendo en http://localhost:${PORT}`)
+})
+
+module.exports = server

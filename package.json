@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "name": "fodegan-backend",
   "version": "0.1.0",
   "main": "src/app.js",
@@ -21,5 +22,24 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.0"
+=======
+  "name": "fodegan-frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "pinia": "^3.0.4",
+    "vue": "^3.5.34",
+    "vue-router": "^5.0.7"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.6",
+    "vite": "^8.0.12"
+>>>>>>> a7f3a087f4701ddd20ca1cd6f9fe8692ec225483
   }
 }

@@ -5,7 +5,7 @@ FODEGAN es una plataforma web integral diseñada para conectar inversionistas co
 
 ## 👥 Integrantes del Grupo
 * **Jairo José Camacho Diaz** - GitHub: JairoCamacho28
-* **Sebastian Hernandez** - GitHub: Sxbxxs
+* **Sebastian Hernandez Salcedo** - GitHub: Sxbxxs
 * **Emil Sanchez** - GitHub: EmilSanchez
 
 ## 💻 Tecnologías Usadas (Stack)

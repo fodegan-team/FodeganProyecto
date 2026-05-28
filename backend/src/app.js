@@ -7,10 +7,8 @@ const cookieParser = require('cookie-parser')
 
 const authRoutes = require('./routes/auth.routes')
 
-const app  = require('express')()
-const PORT = process.env.PORT || 3000
-
 const server = express()
+const PORT   = process.env.PORT || 3000
 
 server.use(helmet())
 server.use(cors({
@@ -29,24 +27,30 @@ server.use('/api', rateLimit({
   message:  { error: 'Demasiadas peticiones. Intenta más tarde.' }
 }))
 
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max:      5,
-  message:  { error: 'Demasiados intentos. Espera 15 minutos.' }
-})
-server.use('/api/auth/login',    authLimiter)
-server.use('/api/auth/register', authLimiter)
+if (process.env.NODE_ENV !== 'test') {
+  const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max:      5,
+    message:  { error: 'Demasiados intentos. Espera 15 minutos.' }
+  })
+  server.use('/api/auth/login',    authLimiter)
+  server.use('/api/auth/register', authLimiter)
+}
 
+// ── Rutas ─────────────────────────────────────────
 server.use('/api/auth', authRoutes)
 
+// ── Health check ──────────────────────────────────
 server.get('/api/health', (_req, res) => {
   res.json({ status: 'OK', app: 'FODEGAN API v0.1' })
 })
 
+// ── 404 ───────────────────────────────────────────
 server.use('*', (_req, res) => {
   res.status(404).json({ error: 'Ruta no encontrada' })
 })
 
+// ── Error handler ─────────────────────────────────
 server.use((err, _req, res, _next) => {
   console.error(err.stack)
   res.status(500).json({ error: 'Error interno del servidor' })

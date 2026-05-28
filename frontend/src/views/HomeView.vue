@@ -390,19 +390,87 @@
 
     </main>
 
-    <button class="fab" @click="ir('register')">+</button>
-    <span class="fab-label">Registrarse</span>
+    <!-- FAB principal -->
+    <div class="fab-container">
+      <!-- Botones secundarios que aparecen al hover -->
+      <Transition name="fab-slide">
+        <div class="fab-opciones" v-if="fabAbierto">
+          <div class="fab-opcion" @click="irA('login')">
+            <span class="fab-opcion-label">Iniciar Sesión</span>
+            <button class="fab-btn fab-login">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                <polyline points="10 17 15 12 10 7"/>
+                <line x1="15" y1="12" x2="3" y2="12"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="fab-opcion" @click="irA('/register?rol=1')">
+            <span class="fab-opcion-label">Quiero inventir ahora</span>
+            <button class="fab-btn fab-inversor">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                <polyline points="17 6 23 6 23 12"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="fab-opcion" @click="irA('/register?rol=2')">
+            <span class="fab-opcion-label">Soy Propietario de finca</span>
+            <button class="fab-btn fab-propietario">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="fab-opcion" @click="irA('/register?rol=3')">
+            <span class="fab-opcion-label">Soy Zootecnista</span>
+            <button class="fab-btn fab-zootecnista">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </Transition>
+
+      <!-- Botón principal -->
+      <button
+        class="fab"
+        @click="fabAbierto = !fabAbierto"
+        :class="{ abierto: fabAbierto }"
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          style="transition: transform 0.3s ease"
+          :style="{ transform: fabAbierto ? 'rotate(45deg)' : 'rotate(0deg)' }">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      </button>
+      <span class="fab-label" v-if="!fabAbierto">Registrarse</span>
+    </div>
 
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { computed, watch } from 'vue'
 
+const router = useRouter()
 const navbarVisible = ref(false)
 const seccionActiva = ref('inicio')
 const faseActiva    = ref(0)
 const mainEl        = ref(null)
+const fabAbierto = ref(false)
+const montoFormateado = ref('')
 
 function onScroll() {
   navbarVisible.value = (mainEl.value?.scrollTop || 0) > 80
@@ -414,8 +482,9 @@ function scrollTo(id) {
   if (el) el.scrollIntoView({ behavior: 'smooth' })
 }
 
-function ir(ruta) {
-  alert(`Vista /${ruta} — próximamente 🚧`)
+function irA(ruta) {
+  fabAbierto.value = false
+  router.push(ruta)
 }
 
 let observer
@@ -434,6 +503,12 @@ onMounted(() => {
 onUnmounted(() => {
   mainEl.value?.removeEventListener('scroll', onScroll)
   observer?.disconnect()
+})
+
+watch(montoFormateado, (val) => {
+  const solo = val.replace(/\D/g, '')
+  form.monto_disponible = solo
+  montoFormateado.value = solo.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
 })
 
 const fases = [
@@ -1133,5 +1208,95 @@ const contacto = [
   width: auto;
   max-width: 120px;
   object-fit: contain;
+}
+/* ── FAB Container ── */
+.fab-container {
+  position: fixed;
+  bottom: 24px; right: 16px;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0;
+}
+
+.fab {
+  all: unset; cursor: pointer;
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--dorado); color: var(--blanco);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  transition: transform 0.2s, background 0.2s;
+  flex-shrink: 0;
+}
+.fab:hover { transform: scale(1.08); }
+.fab.abierto { background: var(--verde); }
+
+.fab-label {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 0.6rem; color: var(--texto-muted);
+  text-align: right; margin-top: 4px;
+}
+
+/* ── Opciones del FAB ── */
+.fab-opciones {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin-bottom: 0.8rem;
+  align-items: flex-end;
+}
+
+.fab-opcion {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+}
+
+.fab-opcion-label {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 0.78rem; font-weight: 600;
+  color: var(--verde);
+  background: var(--blanco);
+  padding: 0.35rem 0.8rem;
+  border-radius: 100px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  white-space: nowrap;
+}
+
+.fab-btn {
+  all: unset; cursor: pointer;
+  width: 44px; height: 44px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--blanco);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+.fab-btn:hover { transform: scale(1.1); }
+
+.fab-login      { background: #1B4332; }
+.fab-inversor   { background: #D4A373; }
+.fab-propietario{ background: #2D6A4F; }
+.fab-zootecnista{ background: #52796F; }
+
+/* ── Animación FAB ── */
+.fab-slide-enter-active,
+.fab-slide-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.fab-slide-enter-from,
+.fab-slide-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
+}
+.label-login       { color: #1B4332; border-left: 3px solid #1B4332; }
+.label-inversor    { color: #92400E; border-left: 3px solid #D4A373; }
+.label-propietario { color: #1B4332; border-left: 3px solid #2D6A4F; }
+.label-zootecnista { color: #2C4A3E; border-left: 3px solid #52796F; }
+
+.fab-opcion-label {
+  padding-left: 0.9rem;
 }
 </style>

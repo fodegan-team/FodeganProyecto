@@ -5,13 +5,20 @@ export default defineConfig({
   timeout: 30000,
   use: {
     baseURL:    'http://localhost:5173',
-    headless:   false,  // true para correr sin ventana
+    headless:   false,
     screenshot: 'only-on-failure',
     video:      'retain-on-failure',
   },
-  webServer: {
-    command: 'npm run dev',
-    url:     'http://localhost:5173',
-    reuseExistingServer: true,
-  }
+  webServer: [
+    {
+      command:             'npm run dev',
+      url:                 'http://localhost:5173',
+      reuseExistingServer: true,
+    },
+    {
+      command:             'cross-env NODE_ENV=test node ../backend/src/app.js',
+      url:                 'http://localhost:3000/api/health',
+      reuseExistingServer: true,
+    }
+  ]
 })

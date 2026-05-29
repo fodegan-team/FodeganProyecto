@@ -243,10 +243,6 @@ const form = reactive({
   tarjeta_profesional: '', universidad: ''
 })
 
-
-
-
-
 const rolesInfo = {
   1: {
     titulo:    'Quiero Invertir',

@@ -21,11 +21,13 @@ server.use(express.json({ limit: '10kb' }))
 server.use(express.urlencoded({ extended: true }))
 server.use(cookieParser())
 
-server.use('/api', rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max:      100,
-  message:  { error: 'Demasiadas peticiones. Intenta más tarde.' }
-}))
+if (process.env.NODE_ENV !== 'test') {
+  server.use('/api', rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max:      100,
+    message:  { error: 'Demasiadas peticiones. Intenta más tarde.' }
+  }))
+}
 
 if (process.env.NODE_ENV !== 'test') {
   const authLimiter = rateLimit({

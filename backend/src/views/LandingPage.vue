@@ -23,26 +23,20 @@
         </p>
 
         <div class="cta-group" :class="{ show: ui.cta }">
-          <button class="btn btn-ghost" @click="ir('login')">
-            <span>Iniciar Sesión</span>
+          <button class="btn btn-ghost" @click="ir('')">
+            <span>Inicio</span>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="2">
               <path d="M5 12h14M12 5l7 7-7 7"/>
             </svg>
           </button>
-          <button class="btn btn-filled" @click="ir('register')">
-            <span>Registrarse</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2">
-              <path d="M12 5v14M5 12h14"/>
-            </svg>
-          </button>
         </div>
       </section>
 
-      <footer class="footer">
-        © 2026 FODEGAN · Todos los derechos reservados
-      </footer>
+    <footer class="footer">
+        © 2026 FODEGAN · Todos los derechos reservados ·
+        <span style="color: #D4A373;">Plataforma Ganadera</span>
+    </footer>
 
     </main>
   </div>
@@ -64,8 +58,10 @@ function iniciar() {
   wait(() => { ui.cta = true }, 1100)
 }
 
-function ir(ruta) {
-  alert(`Vista /${ruta} — próximamente 🚧`)
+import { useRouter } from 'vue-router'
+const router = useRouter()
+function ir() {
+  router.push('/home')
 }
 
 onMounted(iniciar)

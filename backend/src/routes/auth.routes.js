@@ -6,60 +6,26 @@ const { register, login, logout, refreshToken } = require('../controllers/auth.c
 const { verificarToken } = require('../middlewares/auth.middleware')
 const { validar }        = require('../middlewares/validate.middleware')
 
-// ── Validaciones de registro ──────────────────────
-const validarRegistro = [
-  body('nombre')
-    .trim()
-    .notEmpty().withMessage('El nombre es requerido')
-    .isLength({ min: 2 }).withMessage('Mínimo 2 caracteres'),
-
-  body('apellido')
-    .trim()
-    .notEmpty().withMessage('El apellido es requerido')
-    .isLength({ min: 2 }).withMessage('Mínimo 2 caracteres'),
-
-  body('email')
-    .trim()
-    .notEmpty().withMessage('El email es requerido')
-    .isEmail().withMessage('Email inválido')
-    .normalizeEmail(),
-
-  body('password')
-    .notEmpty().withMessage('La contraseña es requerida')
-    .isLength({ min: 8 }).withMessage('Mínimo 8 caracteres')
-    .matches(/[A-Z]/).withMessage('Debe tener al menos una mayúscula')
-    .matches(/[0-9]/).withMessage('Debe tener al menos un número'),
-
-  body('rol_id')
-    .optional()
-    .isInt({ min: 1, max: 4 }).withMessage('Rol inválido'),
-
-  validar
-]
-
-// ── Validaciones de login ─────────────────────────
 const validarLogin = [
-  body('email')
-    .trim()
-    .notEmpty().withMessage('El email es requerido')
-    .isEmail().withMessage('Email inválido')
-    .normalizeEmail(),
-
-  body('password')
-    .notEmpty().withMessage('La contraseña es requerida'),
-
+  body('email').trim().notEmpty().withMessage('Email requerido').isEmail().withMessage('Email inválido').normalizeEmail(),
+  body('password').notEmpty().withMessage('Contraseña requerida'),
   validar
 ]
 
-// ── Rutas ─────────────────────────────────────────
-router.post('/register', validarRegistro, register)
-router.post('/login',    validarLogin,    login)
-router.post('/logout',   verificarToken,  logout)
-router.post('/refresh',                  refreshToken)
+const validarRegistroBase = [
+  body('nombre').trim().notEmpty().withMessage('Nombre requerido').isLength({ min: 2 }).withMessage('Mínimo 2 caracteres'),
+  body('apellido').trim().notEmpty().withMessage('Apellido requerido'),
+  body('email').trim().notEmpty().withMessage('Email requerido').isEmail().withMessage('Email inválido').normalizeEmail(),
+  body('password').notEmpty().withMessage('Contraseña requerida').isLength({ min: 8 }).withMessage('Mínimo 8 caracteres').matches(/[A-Z]/).withMessage('Debe tener una mayúscula').matches(/[0-9]/).withMessage('Debe tener un número'),
+  body('telefono').notEmpty().withMessage('Teléfono requerido'),
+  body('rol_id').notEmpty().withMessage('Rol requerido').isInt({ min: 1, max: 3 }).withMessage('Rol inválido'),
+  validar
+]
 
-// Ruta protegida de prueba
-router.get('/me', verificarToken, (req, res) => {
-  res.json({ usuario: req.usuario })
-})
+router.post('/register', validarRegistroBase, register)
+router.post('/login',    validarLogin,        login)
+router.post('/logout',   verificarToken,      logout)
+router.post('/refresh',                       refreshToken)
+router.get('/me',        verificarToken, (req, res) => res.json({ usuario: req.usuario }))
 
 module.exports = router

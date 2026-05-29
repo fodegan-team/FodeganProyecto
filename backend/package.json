@@ -1,16 +1,19 @@
 {
-<<<<<<< HEAD
   "name": "fodegan-backend",
   "version": "0.1.0",
   "main": "src/app.js",
   "scripts": {
     "dev": "nodemon src/app.js",
     "start": "node src/app.js",
-    "migrate": "node src/config/migrate.js"
+    "migrate": "node src/config/migrate.js",
+    "test": "cross-env NODE_ENV=test jest --forceExit"
+  },
+  "jest": {
+    "testEnvironment": "node"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
-    "cookie-parser": "^1.4.7",
+    "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dotenv": "^16.4.0",
     "express": "^4.19.0",
@@ -21,25 +24,9 @@
     "mysql2": "^3.9.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.0"
-=======
-  "name": "fodegan-frontend",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "pinia": "^3.0.4",
-    "vue": "^3.5.34",
-    "vue-router": "^5.0.7"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-vue": "^6.0.6",
-    "vite": "^8.0.12"
->>>>>>> a7f3a087f4701ddd20ca1cd6f9fe8692ec225483
+    "cross-env": "^10.1.0",
+    "jest": "^30.4.2",
+    "nodemon": "^3.1.0",
+    "supertest": "^7.2.2"
   }
 }

@@ -12,7 +12,6 @@ const pool = mysql.createPool({
   queueLimit:         0
 })
 
-// Verificar conexión al iniciar
 pool.getConnection()
   .then(conn => {
     console.log('✅ Conectado a MySQL — fodegan_db')

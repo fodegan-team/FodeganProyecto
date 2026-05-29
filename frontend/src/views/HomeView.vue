@@ -455,7 +455,7 @@
       </button>
       <span class="fab-label" v-if="!fabAbierto">Registrarse</span>
     </div>
-
+    <router-view />
   </div>
 </template>
 

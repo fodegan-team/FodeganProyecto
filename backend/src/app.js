@@ -42,6 +42,9 @@ if (process.env.NODE_ENV !== 'test') {
 // ── Rutas ─────────────────────────────────────────
 server.use('/api/auth', authRoutes)
 
+const inversionRoutes = require('./routes/inversion.routes')
+server.use('/api/inversiones', inversionRoutes)
+
 // ── Health check ──────────────────────────────────
 server.get('/api/health', (_req, res) => {
   res.json({ status: 'OK', app: 'FODEGAN API v0.1' })

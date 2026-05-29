@@ -77,6 +77,42 @@ async function migrate() {
       )
     `)
 
+    // Tabla configuración global (admin)
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS configuracion (
+        id              INT PRIMARY KEY AUTO_INCREMENT,
+        precio_kilo     DECIMAL(10,2) NOT NULL DEFAULT 9600,
+        peso_animal_kg  DECIMAL(8,2)  NOT NULL DEFAULT 450,
+        updated_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `)
+
+    // Insertar configuración inicial si no existe
+    await pool.query(`
+      INSERT IGNORE INTO configuracion (id, precio_kilo, peso_animal_kg)
+      VALUES (1, 9600, 450)
+    `)
+
+    // Tabla inversiones completa
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS inversiones (
+        id                INT PRIMARY KEY AUTO_INCREMENT,
+        inversionista_id  INT NOT NULL,
+        finca_id          INT NOT NULL,
+        monto_cop         DECIMAL(15,2) NOT NULL,
+        cabezas           INT NOT NULL,
+        dias_ciclo        INT NOT NULL DEFAULT 120,
+        precio_kilo       DECIMAL(10,2) NOT NULL,
+        peso_animal_kg    DECIMAL(8,2)  NOT NULL,
+        estado            ENUM('activa','finalizada','cancelada') DEFAULT 'activa',
+        fecha_inicio      DATE NOT NULL,
+        fecha_fin         DATE NOT NULL,
+        created_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (inversionista_id) REFERENCES usuarios(id),
+        FOREIGN KEY (finca_id)         REFERENCES datos_propietario(id)
+      )
+    `)
+    
     console.log('✅ Tablas creadas correctamente')
     process.exit(0)
   } catch (err) {

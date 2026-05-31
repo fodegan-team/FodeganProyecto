@@ -2,7 +2,7 @@ const express  = require('express')
 const { body } = require('express-validator')
 const router   = express.Router()
 
-const { register, login, logout, refreshToken } = require('../controllers/auth.controller')
+const { register, login, logout, refreshToken, actualizarPerfil } = require('../controllers/auth.controller')
 const { verificarToken } = require('../middlewares/auth.middleware')
 const { validar }        = require('../middlewares/validate.middleware')
 
@@ -27,5 +27,6 @@ router.post('/login',    validarLogin,        login)
 router.post('/logout',   verificarToken,      logout)
 router.post('/refresh',                       refreshToken)
 router.get('/me',        verificarToken, (req, res) => res.json({ usuario: req.usuario }))
+router.put('/perfil',    verificarToken,      actualizarPerfil)
 
 module.exports = router

@@ -1,69 +1,63 @@
 const bcrypt = require('bcrypt')
 const jwt    = require('jsonwebtoken')
 const pool   = require('../config/database')
+const email  = require('../config/email')
 
 function generarAccessToken(payload) {
-  return jwt.sign(payload, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN || '15m'
-  })
+  return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '15m' })
 }
-
 function generarRefreshToken(payload) {
-  return jwt.sign(payload, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d'
-  })
+  return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d' })
 }
 
+// ── REGISTRO ──────────────────────────────────────
 const register = async (req, res) => {
   try {
     const {
-      nombre, apellido, email, password,
+      nombre, apellido, email: correo, password,
       telefono, cedula, ciudad, rol_id,
       // Inversor
       monto_disponible, banco, tipo_cuenta, numero_cuenta,
-      // Propietario
+      // Propietario — ahora va en registro de finca separado
       nombre_finca, ubicacion, hectareas, capacidad_bovinos,
       // Zootecnista
       tarjeta_profesional, universidad
     } = req.body
 
-    const [existe] = await pool.query(
-      'SELECT id FROM usuarios WHERE email = ?', [email]
-    )
-    if (existe.length > 0) {
-      return res.status(400).json({ error: 'El correo ya está registrado' })
-    }
+    const [existe] = await pool.query('SELECT id FROM usuarios WHERE email = ?', [correo])
+    if (existe.length > 0) return res.status(400).json({ error: 'El correo ya está registrado' })
 
     const password_hash = await bcrypt.hash(password, parseInt(process.env.BCRYPT_ROUNDS) || 12)
-
-    // Inversor se aprueba automáticamente, los demás no
-    const aprobado = rol_id === 1 ? true : false
+    const aprobado = parseInt(rol_id) === 1 // Solo inversor se aprueba automáticamente
 
     const [result] = await pool.query(
       `INSERT INTO usuarios (nombre, apellido, email, password_hash, telefono, cedula, ciudad, rol_id, aprobado)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [nombre, apellido, email, password_hash, telefono, cedula, ciudad, rol_id || 1, aprobado]
+      [nombre, apellido, correo, password_hash, telefono, cedula, ciudad, rol_id || 1, aprobado]
     )
-
     const usuarioId = result.insertId
 
-    // Insertar datos específicos según rol
-    if (rol_id === 1) {
-      // Inversor
+    // Datos específicos por rol
+    if (parseInt(rol_id) === 1) {
       await pool.query(
         `INSERT INTO datos_inversor (usuario_id, monto_disponible, banco, tipo_cuenta, numero_cuenta)
          VALUES (?, ?, ?, ?, ?)`,
         [usuarioId, monto_disponible, banco, tipo_cuenta, numero_cuenta]
       )
-    } else if (rol_id === 2) {
-      // Propietario
+    } else if (parseInt(rol_id) === 2) {
+      // Calcular capacidad de la finca
+      const capacidadTotal = Math.floor(parseFloat(hectareas) * 1.75)
+      // Generar nombre ficticio
+      const nombres = ['Alfa','Beta','Gamma','Delta','Epsilon','Zeta','Eta','Theta','Iota','Kappa','Lambda','Mu']
+      const [countFincas] = await pool.query('SELECT COUNT(*) as total FROM fincas')
+      const nombreFicticio = 'Finca ' + (nombres[countFincas[0].total % nombres.length] || 'X')
+
       await pool.query(
-        `INSERT INTO datos_propietario (usuario_id, nombre_finca, ubicacion, hectareas, capacidad_bovinos)
-         VALUES (?, ?, ?, ?, ?)`,
-        [usuarioId, nombre_finca, ubicacion, hectareas, capacidad_bovinos]
+        `INSERT INTO fincas (propietario_id, nombre_real, nombre_ficticio, ubicacion, hectareas, capacidad_total, capacidad_disponible, estado)
+         VALUES (?, ?, ?, ?, ?, ?, ?, 'pendiente')`,
+        [usuarioId, nombre_finca, nombreFicticio, ubicacion, hectareas, capacidadTotal, capacidadTotal]
       )
-    } else if (rol_id === 3) {
-      // Zootecnista
+    } else if (parseInt(rol_id) === 3) {
       await pool.query(
         `INSERT INTO datos_zootecnista (usuario_id, tarjeta_profesional, universidad)
          VALUES (?, ?, ?)`,
@@ -71,14 +65,11 @@ const register = async (req, res) => {
       )
     }
 
-    const payload = { id: usuarioId, email, rol_id: rol_id || 1 }
+    const payload = { id: usuarioId, email: correo, rol_id: rol_id || 1 }
     const accessToken  = generarAccessToken(payload)
     const refreshToken = generarRefreshToken(payload)
 
-    await pool.query(
-      'UPDATE usuarios SET refresh_token = ? WHERE id = ?',
-      [refreshToken, usuarioId]
-    )
+    await pool.query('UPDATE usuarios SET refresh_token = ? WHERE id = ?', [refreshToken, usuarioId])
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
@@ -93,7 +84,7 @@ const register = async (req, res) => {
         : 'Registro exitoso. Tu cuenta está pendiente de aprobación por el administrador.',
       aprobado,
       accessToken: aprobado ? accessToken : null,
-      usuario: { id: usuarioId, nombre, apellido, email, rol_id: rol_id || 1 }
+      usuario: { id: usuarioId, nombre, apellido, email: correo, rol_id: rol_id || 1 }
     })
   } catch (err) {
     console.error('Error en register:', err)
@@ -101,43 +92,32 @@ const register = async (req, res) => {
   }
 }
 
+// ── LOGIN ─────────────────────────────────────────
 const login = async (req, res) => {
   try {
-    const { email, password } = req.body
+    const { email: correo, password } = req.body
 
     const [usuarios] = await pool.query(
-      `SELECT u.*, r.nombre as rol
-       FROM usuarios u
+      `SELECT u.*, r.nombre as rol FROM usuarios u
        JOIN roles r ON u.rol_id = r.id
        WHERE u.email = ? AND u.activo = TRUE`,
-      [email]
+      [correo]
     )
-
-    if (usuarios.length === 0) {
-      return res.status(401).json({ error: 'Credenciales incorrectas' })
-    }
+    if (usuarios.length === 0) return res.status(401).json({ error: 'Credenciales incorrectas' })
 
     const usuario = usuarios[0]
-
     const passwordValida = await bcrypt.compare(password, usuario.password_hash)
-    if (!passwordValida) {
-      return res.status(401).json({ error: 'Credenciales incorrectas' })
-    }
+    if (!passwordValida) return res.status(401).json({ error: 'Credenciales incorrectas' })
 
     if (!usuario.aprobado) {
-      return res.status(403).json({
-        error: 'Tu cuenta está pendiente de aprobación por el administrador.'
-      })
+      return res.status(403).json({ error: 'Tu cuenta está pendiente de aprobación por el administrador.' })
     }
 
     const payload = { id: usuario.id, email: usuario.email, rol_id: usuario.rol_id }
     const accessToken  = generarAccessToken(payload)
     const refreshToken = generarRefreshToken(payload)
 
-    await pool.query(
-      'UPDATE usuarios SET refresh_token = ? WHERE id = ?',
-      [refreshToken, usuario.id]
-    )
+    await pool.query('UPDATE usuarios SET refresh_token = ? WHERE id = ?', [refreshToken, usuario.id])
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
@@ -164,14 +144,12 @@ const login = async (req, res) => {
   }
 }
 
+// ── LOGOUT ────────────────────────────────────────
 const logout = async (req, res) => {
   try {
     const { refreshToken } = req.cookies
     if (refreshToken) {
-      await pool.query(
-        'UPDATE usuarios SET refresh_token = NULL WHERE refresh_token = ?',
-        [refreshToken]
-      )
+      await pool.query('UPDATE usuarios SET refresh_token = NULL WHERE refresh_token = ?', [refreshToken])
     }
     res.clearCookie('refreshToken')
     return res.json({ message: 'Sesión cerrada correctamente' })
@@ -180,19 +158,17 @@ const logout = async (req, res) => {
   }
 }
 
+// ── REFRESH TOKEN ─────────────────────────────────
 const refreshToken = async (req, res) => {
   try {
     const token = req.cookies.refreshToken
     if (!token) return res.status(401).json({ error: 'No autorizado' })
 
-    const [usuarios] = await pool.query(
-      'SELECT * FROM usuarios WHERE refresh_token = ?', [token]
-    )
+    const [usuarios] = await pool.query('SELECT * FROM usuarios WHERE refresh_token = ?', [token])
     if (usuarios.length === 0) return res.status(401).json({ error: 'Token inválido' })
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET)
-    const payload = { id: decoded.id, email: decoded.email, rol_id: decoded.rol_id }
-    const nuevoAccessToken = generarAccessToken(payload)
+    const nuevoAccessToken = generarAccessToken({ id: decoded.id, email: decoded.email, rol_id: decoded.rol_id })
 
     return res.json({ accessToken: nuevoAccessToken })
   } catch (err) {
@@ -200,4 +176,22 @@ const refreshToken = async (req, res) => {
   }
 }
 
-module.exports = { register, login, logout, refreshToken }
+// ── ACTUALIZAR PERFIL ─────────────────────────────
+const actualizarPerfil = async (req, res) => {
+  try {
+    const { nombre, apellido, telefono, ciudad } = req.body
+    await pool.query(
+      'UPDATE usuarios SET nombre=?, apellido=?, telefono=?, ciudad=?, updated_at=NOW() WHERE id=?',
+      [nombre, apellido, telefono, ciudad, req.usuario.id]
+    )
+    const [updated] = await pool.query(
+      'SELECT id, nombre, apellido, email, telefono, ciudad, rol_id FROM usuarios WHERE id=?',
+      [req.usuario.id]
+    )
+    return res.json({ message: 'Perfil actualizado', usuario: updated[0] })
+  } catch (err) {
+    return res.status(500).json({ error: 'Error actualizando perfil' })
+  }
+}
+
+module.exports = { register, login, logout, refreshToken, actualizarPerfil }

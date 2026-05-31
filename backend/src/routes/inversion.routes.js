@@ -2,24 +2,27 @@ const express = require('express')
 const router  = express.Router()
 
 const {
-  getConfiguracion,
-  updateConfiguracion,
-  getFincasDisponibles,
-  crearInversion,
-  getMisInversiones
+  getConfiguracion, updateConfiguracion,
+  crearInversion, aprobarInversion, rechazarInversion,
+  getMisInversiones, getDetalleInversion,
+  getAllInversiones, finalizarInversion
 } = require('../controllers/inversion.controller')
 
 const { verificarToken, verificarRol } = require('../middlewares/auth.middleware')
 
-// Configuración — solo admin
-router.get('/configuracion',    getConfiguracion)
-router.put('/configuracion',    verificarToken, verificarRol('administrador'), updateConfiguracion)
+// Configuración
+router.get('/configuracion', getConfiguracion)
+router.put('/configuracion', verificarToken, verificarRol('administrador'), updateConfiguracion)
 
-// Fincas disponibles — solo inversores
-router.get('/fincas-disponibles', verificarToken, verificarRol('inversionista'), getFincasDisponibles)
+// Inversor
+router.post('/',      verificarToken, verificarRol('inversionista'), crearInversion)
+router.get('/mias',   verificarToken, verificarRol('inversionista'), getMisInversiones)
+router.get('/:id',    verificarToken, verificarRol('inversionista'), getDetalleInversion)
 
-// Inversiones
-router.post('/',    verificarToken, verificarRol('inversionista'), crearInversion)
-router.get('/mias', verificarToken, verificarRol('inversionista'), getMisInversiones)
+// Admin
+router.get('/',              verificarToken, verificarRol('administrador'), getAllInversiones)
+router.put('/:id/aprobar',   verificarToken, verificarRol('administrador'), aprobarInversion)
+router.put('/:id/rechazar',  verificarToken, verificarRol('administrador'), rechazarInversion)
+router.put('/:id/finalizar', verificarToken, verificarRol('administrador'), finalizarInversion)
 
 module.exports = router

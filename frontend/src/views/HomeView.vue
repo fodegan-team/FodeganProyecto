@@ -166,8 +166,8 @@
                 <h4 class="proceso-title">Seleccione su Participación en el Lote</h4>
                 <p class="proceso-desc">
                     Explore lotes disponibles, <strong>revise informes técnicos</strong> de cada
-                    predio y <span class="proceso-highlight">defina el número de cabezas a financiar.</span>
-                    Firme digitalmente y realice su aporte.
+                    predio y <span class="proceso-highlight">defina el número de animales a financiar.</span>
+                    Firme y realice su aporte.
                 </p>
                 </div>
             </div>
@@ -190,8 +190,7 @@
                 <p class="proceso-desc">
                     <strong>Monitoree el crecimiento</strong> del ganado en tiempo real.
                     Al finalizar el ciclo,
-                    <span class="proceso-highlight">reciba su capital más los rendimientos</span>
-                    directamente en su cuenta.
+                    <span class="proceso-highlight">reciba su capital más los rendimientos.</span>
                 </p>
                 </div>
             </div>

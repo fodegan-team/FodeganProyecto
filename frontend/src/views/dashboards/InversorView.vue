@@ -121,7 +121,9 @@
           <div class="inv-card" v-for="inv in misInversiones" :key="inv.id">
             <div class="inv-card-header">
               <div class="inv-finca-badge">🐄 {{ inv.nombre_ficticio }}</div>
-              <span class="inv-estado activa">● Activa</span>
+              <span class="inv-estado" :class="inv.estado">
+                {{ inv.estado === 'pendiente_reunion' ? '⏳ En revisión' : inv.estado === 'activa' ? '● Activa' : inv.estado }}
+              </span>
             </div>
             <div class="inv-card-body">
               <div class="inv-monto">{{ formatCOP(inv.monto_cop) }}</div>
@@ -236,8 +238,8 @@
               <p class="finca-select-nombre">{{ finca.nombre_ficticio }}</p>
               <div class="finca-select-stats">
                 <div>
-                  <p class="finca-stat-val">{{ finca.capacidad_total }}</p>
-                  <p class="finca-stat-lbl">Capacidad</p>
+                  <p class="finca-stat-val">{{ finca.capacidad_disponible }}</p>
+                  <p class="finca-stat-lbl">Disponible</p>
                 </div>
                 <div>
                   <p class="finca-stat-val">{{ finca.hectareas }} ha</p>
@@ -448,7 +450,9 @@
                   <p class="detalle-tag">INVERSIÓN ACTIVA</p>
                   <h3 class="detalle-nombre">{{ inversionDetalle.inversion.nombre_ficticio }}</h3>
                 </div>
-                <span class="inv-estado activa">● Activa</span>
+                <span class="inv-estado" :class="inversionDetalle.inversion.estado">
+                  {{ inversionDetalle.inversion.estado === 'pendiente_reunion' ? '⏳ En revisión' : '● Activa' }}
+                </span>
               </div>
 
               <div class="detalle-stats-grid">
@@ -457,7 +461,7 @@
                   <p class="det-stat-lbl">Monto invertido</p>
                 </div>
                 <div class="det-stat">
-                  <p class="det-stat-val">{{ inversionDetalle.inversion.cabezas }}</p>
+                  <p class="det-stat-val">{{ inversionDetalle.inversion.cantidad_animales }}</p>
                   <p class="det-stat-lbl">Cabezas de ganado</p>
                 </div>
                 <div class="det-stat">
@@ -529,7 +533,7 @@
                   <span>Registros</span>
                 </div>
                 <div class="tabla-row" v-for="animal in inversionDetalle.animales" :key="animal.id">
-                  <span>🐄 #{{ animal.numero_animal }}</span>
+                  <span>{{ animal.codigo }}</span>
                   <span>{{ animal.peso_inicial }} kg</span>
                   <span>{{ animal.peso_actual || animal.peso_inicial }} kg</span>
                   <span class="green">+{{ ((animal.peso_actual || animal.peso_inicial) - animal.peso_inicial).toFixed(1) }} kg</span>
@@ -648,7 +652,7 @@ async function buscarFincas() {
   errorFincas.value    = ''
   cargandoFincas.value = true
   try {
-    const { data } = await axios.get(`${API}/inversiones/fincas-disponibles`, {
+    const { data } = await axios.get(`${API}/fincas/disponibles`, {
       params: { monto: montoNumerico.value }, headers: headers.value
     })
     fincasDisponibles.value = data.fincas
@@ -745,8 +749,10 @@ async function cerrarSesion() {
   router.push('/')
 }
 
-onMounted(async () => {
-  await Promise.all([cargarConfig(), cargarMisInversiones(), cargarPerfil()])
+onMounted(() => {
+  cargarConfig()
+  cargarMisInversiones()
+  cargarPerfil()
 })
 </script>
 
@@ -1385,4 +1391,6 @@ onMounted(async () => {
   .detalle-layout { grid-template-columns: 1fr; }
   .inv-detalle-row { flex-wrap: wrap; }
 }
+.inv-estado.pendiente_reunion { color: #D97706; }
+.inv-estado.activa { color: #16a34a; }
 </style>

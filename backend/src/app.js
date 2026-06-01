@@ -32,7 +32,7 @@ if (process.env.NODE_ENV !== 'test') {
 if (process.env.NODE_ENV !== 'test') {
   const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max:      5,
+    max:      100,  // Aumentado para desarrollo
     message:  { error: 'Demasiados intentos. Espera 15 minutos.' }
   })
   server.use('/api/auth/login',    authLimiter)
@@ -47,6 +47,9 @@ server.use('/api/inversiones', inversionRoutes)
 
 const fincaRoutes    = require('./routes/finca.routes')
 server.use('/api/fincas',     fincaRoutes)
+
+const adminRoutes = require('./routes/admin.routes')
+server.use('/api/admin', adminRoutes)
 
 // ── Health check ──────────────────────────────────
 server.get('/api/health', (_req, res) => {

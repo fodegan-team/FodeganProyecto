@@ -30,13 +30,16 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach(async (to, _from, next) => {
-  if (!to.meta.requiresAuth) return next()
+router.beforeEach(async (to, _from) => {
+  if (!to.meta.requiresAuth) return true
+
   const { useAuthStore } = await import('@/stores/auth.store')
   const auth = useAuthStore()
-  if (!auth.estaAutenticado) return next('/login')
-  if (to.meta.rol && auth.rol !== to.meta.rol) return next('/home')
-  next()
+
+  if (!auth.estaAutenticado) return '/login'
+  if (to.meta.rol && auth.rol !== to.meta.rol) return '/home'
+
+  return true
 })
 
 export default router

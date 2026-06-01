@@ -316,6 +316,38 @@
         </div>
       </section>
 
+      <!-- ══ ZOOTECNISTAS ══ -->
+      <section v-if="seccionActiva === 'zootecnistas'" class="seccion">
+        <div class="section-header">
+          <h2 class="section-title">Zootecnistas y sus Fincas</h2>
+        </div>
+
+        <div class="zoo-grid">
+          <div class="zoo-card" v-for="zoo in zootecnistas" :key="zoo.id">
+            <div class="zoo-header">
+              <div class="zoo-avatar">
+                {{ zoo.nombre.charAt(0) }}{{ zoo.apellido.charAt(0) }}
+              </div>
+              <div>
+                <p class="zoo-nombre">{{ zoo.nombre }} {{ zoo.apellido }}</p>
+                <p class="zoo-email">{{ zoo.email }}</p>
+              </div>
+              <span class="estado-badge" :class="zoo.aprobado ? 'aprobada' : 'pendiente'">
+                {{ zoo.aprobado ? 'Activo' : 'Pendiente' }}
+              </span>
+            </div>
+            <div class="zoo-fincas" v-if="zoo.fincas && zoo.fincas.length > 0">
+              <p class="zoo-fincas-titulo">Fincas asignadas:</p>
+              <div class="zoo-finca-tag" v-for="f in zoo.fincas" :key="f.id">
+                🌿 {{ f.nombre_ficticio }} — {{ f.nombre_real }}
+              </div>
+            </div>
+            <p class="zoo-sin-fincas" v-else>Sin fincas asignadas</p>
+          </div>
+        </div>
+      </section>
+
+
       <!-- ══ CONFIGURACIÓN ══ -->
       <section v-if="seccionActiva === 'config'" class="seccion">
         <div class="section-header">
@@ -431,12 +463,14 @@ const navItems = computed(() => [
   { id: 'inversiones',label: 'Inversiones',  badge: inversionesPendientes.value.length, icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>` },
   { id: 'usuarios',   label: 'Usuarios',     badge: usuariosPendientes.value.length, icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>` },
   { id: 'config',     label: 'Configuración',badge: 0, icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>` },
+  { id: 'zootecnistas', label: 'Zootecnistas', badge: 0, icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>` },
 ])
 
 // ── Datos ─────────────────────────────────────────
 const todasFincas      = ref([])
 const todasInversiones = ref([])
 const todosUsuarios    = ref([])
+const zootecnistas     = ref([])
 const config           = ref(null)
 
 const filtroFincas      = ref('todas')
@@ -501,6 +535,7 @@ async function cargarTodo() {
     config.value           = configRes.data
     configForm.precio_kilo    = configRes.data.precio_kilo
     configForm.peso_animal_kg = configRes.data.peso_animal_kg
+    cargarZootecnistas()
   } catch (err) {
     console.error('Error cargando datos admin:', err)
   }
@@ -615,6 +650,13 @@ async function verAnimales(inv) {
   } finally {
     cargandoAnimales.value = false
   }
+}
+
+async function cargarZootecnistas() {
+  try {
+    const { data } = await axios.get(`${API}/admin/zootecnistas`, { headers: headers.value })
+    zootecnistas.value = data
+  } catch {}
 }
 
 onMounted(cargarTodo)
@@ -978,5 +1020,28 @@ onMounted(cargarTodo)
 .estado-animal.excelente    { background: #DBEAFE; color: #1E40AF; }
 .estado-animal.enfermo      { background: #FEF3C7; color: #92400E; }
 .estado-animal.mal_estado   { background: #FEE2E2; color: #991B1B; }
+
+.zoo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px,1fr)); gap: 1rem; }
+.zoo-card {
+  background: var(--blanco); border-radius: 14px; padding: 1.4rem;
+  border: 1px solid var(--border);
+}
+.zoo-header { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1rem; }
+.zoo-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--gris); color: #fff;
+  font-family: 'Anton', sans-serif; font-size: 0.9rem;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.zoo-nombre { font-weight: 700; color: var(--texto); font-size: 0.9rem; }
+.zoo-email  { font-size: 0.72rem; color: var(--muted); }
+.zoo-fincas-titulo { font-size: 0.72rem; font-weight: 600; color: var(--muted); margin-bottom: 0.5rem; }
+.zoo-finca-tag {
+  display: inline-block; background: #F0FDF4; color: #065F46;
+  font-size: 0.75rem; font-weight: 600;
+  padding: 0.3rem 0.8rem; border-radius: 100px;
+  margin: 0.2rem 0.2rem 0 0;
+}
+.zoo-sin-fincas { font-size: 0.78rem; color: var(--muted); }
 
 </style>

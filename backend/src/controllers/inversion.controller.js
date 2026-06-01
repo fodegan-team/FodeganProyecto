@@ -228,18 +228,32 @@ const getDetalleInversion = async (req, res) => {
     const inversion = inversiones[0]
 
     // Animales con seguimiento
-    const [animales] = await pool.query(
-      'SELECT * FROM animales WHERE inversion_id=? ORDER BY codigo',
-      [id]
-    )
+    const [animales] = await pool.query(`
+      SELECT a.*,
+        sp.peso_kg as peso_actual,
+        sp.estado  as estado_actual,
+        sp.mes_numero as ultimo_mes,
+        (SELECT COUNT(*) FROM seguimiento_peso WHERE animal_id = a.id) as registros
+      FROM animales a
+      LEFT JOIN seguimiento_peso sp ON sp.animal_id = a.id
+        AND sp.mes_numero = (
+          SELECT MAX(mes_numero) FROM seguimiento_peso WHERE animal_id = a.id
+        )
+      WHERE a.inversion_id = ?
+      ORDER BY a.codigo
+    `, [id])
 
     // Seguimiento por mes
     const [seguimiento] = await pool.query(`
-      SELECT sp.*, a.codigo
+      SELECT
+        sp.mes_numero,
+        AVG(sp.peso_kg) AS peso_promedio,
+        COUNT(DISTINCT sp.animal_id) AS animales,
+        MIN(sp.fecha_registro) AS fecha_registro
       FROM seguimiento_peso sp
-      JOIN animales a ON sp.animal_id = a.id
-      WHERE sp.inversion_id=?
-      ORDER BY a.codigo, sp.mes_numero
+      WHERE sp.inversion_id = ?
+      GROUP BY sp.mes_numero
+      ORDER BY sp.mes_numero ASC
     `, [id])
 
     // Comentarios

@@ -53,5 +53,43 @@ const getAnimalesInversion = async (req, res) => {
     res.status(500).json({ error: 'Error obteniendo animales' })
   }
 }
+const asignarZootecnista = async (req, res) => {
+  try {
+    const { zootecnista_id, finca_id } = req.body
+    await pool.query(`
+      INSERT INTO asignaciones_zootecnista (zootecnista_id, finca_id, activa)
+      VALUES (?, ?, TRUE)
+      ON DUPLICATE KEY UPDATE activa = TRUE
+    `, [zootecnista_id, finca_id])
+    res.json({ message: 'Zootecnista asignado correctamente' })
+  } catch (err) {
+    res.status(500).json({ error: 'Error asignando zootecnista' })
+  }
+}
 
-module.exports = { getUsuarios, aprobarUsuario, getAnimalesInversion }
+const getZootecnistas = async (_req, res) => {
+  try {
+    const [zootecnistas] = await pool.query(`
+      SELECT u.id, u.nombre, u.apellido, u.email, u.aprobado
+      FROM usuarios u
+      WHERE u.rol_id = 3
+      ORDER BY u.nombre
+    `)
+
+    for (const zoo of zootecnistas) {
+      const [fincas] = await pool.query(`
+        SELECT f.id, f.nombre_real, f.nombre_ficticio
+        FROM asignaciones_zootecnista az
+        JOIN fincas f ON az.finca_id = f.id
+        WHERE az.zootecnista_id = ? AND az.activa = TRUE
+      `, [zoo.id])
+      zoo.fincas = fincas
+    }
+
+    res.json(zootecnistas)
+  } catch (err) {
+    res.status(500).json({ error: 'Error obteniendo zootecnistas' })
+  }
+}
+
+module.exports = { getUsuarios, aprobarUsuario, getAnimalesInversion, asignarZootecnista, getZootecnistas }

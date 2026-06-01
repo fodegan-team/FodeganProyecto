@@ -399,7 +399,7 @@
                 <div class="inv-detalle-icon">🐄</div>
                 <div>
                   <p class="inv-detalle-nombre">{{ inv.nombre_ficticio }}</p>
-                  <p class="inv-detalle-fecha">Inicio: {{ formatFecha(inv.fecha_inicio) }}</p>
+                  <p class="inv-detalle-fecha">Inicio: {{ formatFecha(inv.fecha_inversion) }}</p>
                 </div>
               </div>
               <div class="inv-detalle-center">
@@ -408,7 +408,7 @@
                   <span class="inv-det-lbl">Monto</span>
                 </div>
                 <div class="inv-det-stat">
-                  <span class="inv-det-val">{{ inv.cabezas }}</span>
+                  <span class="inv-det-val">{{ inv.cantidad_animales }}</span>
                   <span class="inv-det-lbl">Cabezas</span>
                 </div>
                 <div class="inv-det-stat">
@@ -427,7 +427,6 @@
                   </div>
                   <span>{{ Math.min(inv.progreso || 0, 100) }}%</span>
                 </div>
-                <span class="inv-ver-detalle">Ver detalle →</span>
               </div>
             </div>
           </div>
@@ -485,8 +484,8 @@
                     :style="{ width: Math.min(inversionDetalle.inversion.progreso || 0, 100) + '%' }" />
                 </div>
                 <div class="detalle-progress-dates">
-                  <span>{{ formatFecha(inversionDetalle.inversion.fecha_inicio) }}</span>
-                  <span>{{ formatFecha(inversionDetalle.inversion.fecha_fin) }}</span>
+                  <span>{{ formatFecha(inversionDetalle.inversion.fecha_inicio_ciclo) }}</span>
+                  <span>{{ formatFecha(inversionDetalle.inversion.fecha_fin_ciclo) }}</span>
                 </div>
               </div>
 
@@ -536,7 +535,9 @@
                   <span>{{ animal.codigo }}</span>
                   <span>{{ animal.peso_inicial }} kg</span>
                   <span>{{ animal.peso_actual || animal.peso_inicial }} kg</span>
-                  <span class="green">+{{ ((animal.peso_actual || animal.peso_inicial) - animal.peso_inicial).toFixed(1) }} kg</span>
+                  <span :class="((animal.peso_actual || animal.peso_inicial) - animal.peso_inicial) >= 0 ? 'green' : 'red'">
+                    {{ ((animal.peso_actual || animal.peso_inicial) - animal.peso_inicial) >= 0 ? '+' : '' }}{{ ((animal.peso_actual || animal.peso_inicial) - animal.peso_inicial).toFixed(1) }} kg
+                  </span>
                   <span>{{ animal.registros }} reportes</span>
                 </div>
               </div>
@@ -545,14 +546,14 @@
               <div v-if="inversionDetalle.seguimiento.length > 0">
                 <h4 class="detalle-section-title" style="margin-top: 1.5rem;">Historial de Peso Promedio</h4>
                 <div class="seguimiento-lista">
-                  <div class="seg-item" v-for="seg in inversionDetalle.seguimiento" :key="seg.fecha_registro">
-                    <span class="seg-fecha">{{ formatFecha(seg.fecha_registro) }}</span>
+                  <div class="seg-item" v-for="seg in inversionDetalle.seguimiento" :key="seg.mes_numero">
+                    <span class="seg-fecha">Mes {{ seg.mes_numero }}</span>
                     <div class="seg-bar-wrap">
                       <div class="seg-bar">
-                        <div class="seg-bar-fill" :style="{ width: Math.min((seg.peso_promedio / 600) * 100, 100) + '%' }" />
+                        <div class="seg-bar-fill" :style="{ width: Math.min((parseFloat(seg.peso_promedio) / 600) * 100, 100) + '%' }" />
                       </div>
                     </div>
-                    <span class="seg-peso">{{ parseFloat(seg.peso_promedio).toFixed(1) }} kg</span>
+                    <span class="seg-peso">{{ parseFloat(seg.peso_promedio).toFixed(1) }} kg prom.</span>
                   </div>
                 </div>
               </div>
@@ -734,6 +735,7 @@ async function cargarPerfil() {
 async function verDetalle(inv) {
   inversionSeleccionada.value = inv
   cargandoDetalle.value = true
+  inversionDetalle.value = null
   try {
     const { data } = await axios.get(`${API}/inversiones/${inv.id}`, { headers: headers.value })
     inversionDetalle.value = data
@@ -1393,4 +1395,5 @@ onMounted(() => {
 }
 .inv-estado.pendiente_reunion { color: #D97706; }
 .inv-estado.activa { color: #16a34a; }
+.red { color: #dc2626; font-weight: 700; }
 </style>

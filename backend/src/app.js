@@ -6,6 +6,10 @@ const rateLimit    = require('express-rate-limit')
 const cookieParser = require('cookie-parser')
 
 const authRoutes = require('./routes/auth.routes')
+const adminRoutes = require('./routes/admin.routes')
+const zootecnistaRoutes = require('./routes/zootecnista.routes')
+const fincaRoutes    = require('./routes/finca.routes')
+const inversionRoutes = require('./routes/inversion.routes')
 
 const server = express()
 const PORT   = process.env.PORT || 3000
@@ -41,15 +45,10 @@ if (process.env.NODE_ENV !== 'test') {
 
 // ── Rutas ─────────────────────────────────────────
 server.use('/api/auth', authRoutes)
-
-const inversionRoutes = require('./routes/inversion.routes')
-server.use('/api/inversiones', inversionRoutes)
-
-const fincaRoutes    = require('./routes/finca.routes')
-server.use('/api/fincas',     fincaRoutes)
-
-const adminRoutes = require('./routes/admin.routes')
+server.use('/api/inversiones',inversionRoutes)
+server.use('/api/fincas', fincaRoutes)
 server.use('/api/admin', adminRoutes)
+server.use('/api/zootecnista', zootecnistaRoutes)
 
 // ── Health check ──────────────────────────────────
 server.get('/api/health', (_req, res) => {

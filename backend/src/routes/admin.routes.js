@@ -1,13 +1,24 @@
 const express = require('express')
 const router  = express.Router()
 
-const { getUsuarios, aprobarUsuario, getAnimalesInversion, asignarZootecnista, getZootecnistas } = require('../controllers/admin.controller')
-const { verificarToken, verificarRol } = require('../middlewares/auth.middleware')
+const {
+  getUsuarios, aprobarUsuario, getAnimalesInversion,
+  asignarZootecnista, getZootecnistas,
+  crearVisita, getVisitas, getAlertasSanitarias,
+  getInversionesZootecnista
+} = require('../controllers/admin.controller')
 
-router.get('/usuarios',                    verificarToken, verificarRol('administrador'), getUsuarios)
-router.put('/usuarios/:id/aprobar',        verificarToken, verificarRol('administrador'), aprobarUsuario)
-router.get('/inversiones/:id/animales',    verificarToken, verificarRol('administrador'), getAnimalesInversion)
-router.post('/asignar-zootecnista',        verificarToken, verificarRol('administrador'), asignarZootecnista)
-router.get('/zootecnistas', verificarToken, verificarRol('administrador'), getZootecnistas)
+const { verificarToken, verificarRol } = require('../middlewares/auth.middleware')
+const auth = [verificarToken, verificarRol('administrador')]
+
+router.get('/usuarios',                        ...auth, getUsuarios)
+router.put('/usuarios/:id/aprobar',            ...auth, aprobarUsuario)
+router.get('/inversiones/:id/animales',        ...auth, getAnimalesInversion)
+router.post('/asignar-zootecnista',            ...auth, asignarZootecnista)
+router.get('/zootecnistas',                    ...auth, getZootecnistas)
+router.post('/visitas',                        ...auth, crearVisita)
+router.get('/visitas',                         ...auth, getVisitas)
+router.get('/alertas',                         ...auth, getAlertasSanitarias)
+router.get('/zootecnistas/:zootecnista_id/inversiones', ...auth, getInversionesZootecnista)
 
 module.exports = router

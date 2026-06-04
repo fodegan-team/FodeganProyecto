@@ -197,67 +197,76 @@
                 <th>Acciones</th>
               </tr>
             </thead>
-              <tbody>
-                <template v-for="inv in inversionesFiltradas" :key="inv.id">
-                  <tr>
-                    <td>
-                      <p class="td-nombre">{{ inv.inversor_nombre }}</p>
-                      <p class="td-email">{{ inv.inversor_email }}</p>
-                    </td>
-                    <td>{{ inv.nombre_ficticio }}</td>
-                    <td>{{ formatCOP(inv.monto_cop) }}</td>
-                    <td>{{ inv.cantidad_animales }}</td>
-                    <td>{{ inv.dias_ciclo }}d</td>
-                    <td class="green">{{ inv.rendimiento_pct }}%</td>
-                    <td>
-                      <span class="estado-badge" :class="inv.estado">
-                        {{ inv.estado === 'pendiente_reunion' ? 'Pendiente' : inv.estado }}
-                      </span>
-                    </td>
-                    <td>
-                      <div class="acciones">
-                        <button class="btn-ver-animales"
-                          v-if="inv.estado === 'activa'"
-                          @click="verAnimales(inv)">
+            <tbody>
+              <template v-for="inv in inversionesFiltradas" :key="inv.id">
+                <tr>
+                  <td>
+                    <p class="td-nombre">{{ inv.inversor_nombre }}</p>
+                    <p class="td-email">{{ inv.inversor_email }}</p>
+                  </td>
+                  <td>{{ inv.nombre_ficticio }}</td>
+                  <td>{{ formatCOP(inv.monto_cop) }}</td>
+                  <td>{{ inv.cantidad_animales }}</td>
+                  <td>{{ inv.dias_ciclo }}d</td>
+                  <td class="green">{{ inv.rendimiento_pct }}%</td>
+                  <td>
+                    <span class="estado-badge" :class="inv.estado">
+                      {{ inv.estado === 'pendiente_reunion' ? 'Pendiente' : inv.estado }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="acciones">
+                      <!-- Pendiente reunion -->
+                      <template v-if="inv.estado === 'pendiente_reunion'">
+                        <button class="btn-ver-animales" @click="abrirRegistroAnimales(inv)">
+                          ✏ Registrar animales
+                        </button>
+                        <button class="btn-aprobar" @click="aprobarInversion(inv.id)">✓ Aprobar</button>
+                        <button class="btn-rechazar" @click="abrirRechazarInversion(inv)">✗ Rechazar</button>
+                      </template>
+                      <!-- Activa -->
+                      <template v-else-if="inv.estado === 'activa'">
+                        <button class="btn-ver-animales" @click="verAnimales(inv)">
                           {{ inversionExpandida?.id === inv.id ? '▲ Ocultar' : '▼ Animales' }}
                         </button>
-                        <button class="btn-aprobar" v-if="inv.estado === 'pendiente_reunion'" @click="aprobarInversion(inv.id)">✓ Aprobar</button>
-                        <button class="btn-rechazar" v-if="inv.estado === 'pendiente_reunion'" @click="abrirRechazarInversion(inv)">✗ Rechazar</button>
-                        <button class="btn-finalizar" v-if="inv.estado === 'activa'" @click="finalizarInversion(inv.id)">⏹ Finalizar</button>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr v-if="inversionExpandida?.id === inv.id" class="fila-expandida">
-                    <td colspan="8">
-                      <div class="animales-expand" v-if="cargandoAnimales">Cargando animales...</div>
-                      <div class="animales-expand" v-else>
-                        <p class="animales-titulo">Registro de animales — {{ inv.nombre_ficticio }}</p>
-                        <div class="animales-tabla-mini">
-                          <div class="animales-header-mini">
-                            <span>Código</span>
-                            <span>Peso inicial</span>
-                            <span>Estado actual</span>
-                            <span>Registros</span>
-                          </div>
-                          <div class="animales-row-mini" v-for="animal in animalesInversion" :key="animal.id">
-                            <span class="animal-codigo">{{ animal.codigo }}</span>
-                            <span>{{ animal.peso_inicial }} kg</span>
-                            <span>
-                              <span class="estado-animal" :class="animal.estado_actual">
-                                {{ animal.estado_actual?.replace('_', ' ') }}
-                              </span>
-                            </span>
-                            <span>{{ animal.registros || 0 }} reportes</span>
-                          </div>
-                          <p class="sin-animales" v-if="animalesInversion.length === 0">
-                            No hay animales registrados aún.
-                          </p>
+                        <button class="btn-finalizar" @click="finalizarInversion(inv.id)">⏹ Finalizar</button>
+                      </template>
+                      <span v-else class="td-email">—</span>
+                    </div>
+                  </td>
+                </tr>
+                <!-- Fila expandida animales -->
+                <tr v-if="inversionExpandida?.id === inv.id" class="fila-expandida">
+                  <td colspan="8">
+                    <div class="animales-expand" v-if="cargandoAnimales">Cargando animales...</div>
+                    <div class="animales-expand" v-else>
+                      <p class="animales-titulo">Registro de animales — {{ inv.nombre_ficticio }}</p>
+                      <div class="animales-tabla-mini">
+                        <div class="animales-header-mini">
+                          <span>Código</span>
+                          <span>Peso inicial</span>
+                          <span>Estado actual</span>
+                          <span>Registros</span>
                         </div>
+                        <div class="animales-row-mini" v-for="animal in animalesInversion" :key="animal.id">
+                          <span class="animal-codigo">{{ animal.codigo }}</span>
+                          <span>{{ animal.peso_inicial }} kg</span>
+                          <span>
+                            <span class="estado-animal" :class="animal.estado_actual">
+                              {{ animal.estado_actual?.replace('_', ' ') }}
+                            </span>
+                          </span>
+                          <span>{{ animal.registros || 0 }} reportes</span>
+                        </div>
+                        <p class="sin-animales" v-if="animalesInversion.length === 0">
+                          No hay animales registrados aún.
+                        </p>
                       </div>
-                    </td>
-                  </tr>
-                </template>
-              </tbody>
+                    </div>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
           </table>
         </div>
       </section>
@@ -402,6 +411,57 @@
         </div>
       </section>
 
+      <!-- ══ VISITAS ══ -->
+      <section v-if="seccionActiva === 'visitas'" class="seccion">
+        <div class="section-header">
+          <h2 class="section-title">Calendario de Visitas</h2>
+        </div>
+
+        <div class="calendario-wrap">
+          <!-- Navegación -->
+          <div class="calendario-nav">
+            <button class="cal-nav-btn" @click="mesAnterior">‹</button>
+            <h3 class="cal-mes-titulo">{{ nombreMes }}</h3>
+            <button class="cal-nav-btn" @click="mesSiguiente">›</button>
+          </div>
+
+          <!-- Leyenda -->
+          <div class="cal-leyenda">
+            <span class="leyenda-item cal-azul">Pesaje</span>
+            <span class="leyenda-item cal-verde">Vacunación</span>
+            <span class="leyenda-item cal-cyan">Revisión</span>
+            <span class="leyenda-item cal-naranja">Control Sanitario</span>
+          </div>
+
+          <!-- Grilla -->
+          <div class="calendario-grid">
+            <div class="cal-dia-header" v-for="d in ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']" :key="d">{{ d }}</div>
+            <div
+              v-for="(dia, idx) in diasCalendario" :key="idx"
+              class="cal-dia-cell"
+              :class="{
+                'otro-mes':    !dia.esEsteMes,
+                'es-pasado':   dia.esPasado && dia.esEsteMes,
+                'es-hoy':      dia.esHoy,
+                'es-futuro':   !dia.esPasado && dia.esEsteMes && !dia.esHoy,
+                'tiene-visita': dia.visitas.length > 0
+              }"
+              @click="abrirModalVisita(dia)"
+            >
+              <span class="cal-num">{{ dia.numero }}</span>
+              <div class="cal-visitas">
+                <div v-for="v in dia.visitas.slice(0,2)" :key="v.id"
+                  class="cal-visita-chip" :class="'cal-' + tipoColor(v.tipo)">
+                  <span class="cal-chip-zoo">{{ v.zootecnista_nombre }}</span>
+                  <span class="cal-chip-tipo">{{ tipoLabel(v.tipo) }}</span>
+                  <span class="cal-chip-estado" :class="v.estado">● {{ v.estado }}</span>
+                </div>
+                <span v-if="dia.visitas.length > 2" class="cal-mas">+{{ dia.visitas.length - 2 }} más</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
 
     <!-- ══ MODAL RECHAZAR FINCA ══ -->
@@ -440,6 +500,139 @@
       </div>
     </Teleport>
 
+    <!-- ══ MODAL CREAR VISITA ══ -->
+    <Teleport to="body">
+      <div class="modal-overlay" v-if="modalVisita" @click.self="modalVisita = false">
+        <div class="modal-card" style="max-width: 520px;">
+          <h3 class="modal-titulo">Programar Visita</h3>
+          <p class="modal-sub">{{ diaSeleccionado ? formatFecha(diaSeleccionado.fecha) : '' }}</p>
+
+          <div class="visita-form">
+
+            <div class="vf-group">
+              <label class="vf-label">Zootecnista</label>
+              <div class="vf-select-wrap">
+                <select v-model="visitaForm.zootecnista_id" @change="cargarInversionesZootecnista" class="vf-select">
+                  <option value="">Selecciona un zootecnista</option>
+                  <option v-for="z in zootecnistas" :key="z.id" :value="z.id">
+                    {{ z.nombre }} {{ z.apellido }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div class="vf-group" v-if="visitaForm.zootecnista_id">
+              <label class="vf-label">Inversión / Finca</label>
+              <div v-if="cargandoInversiones" class="vf-loading">Cargando inversiones...</div>
+              <div class="vf-select-wrap" v-else>
+                <select v-model="visitaForm.finca_id" class="vf-select">
+                  <option value="">Selecciona una inversión</option>
+                  <option v-for="inv in inversionesZootecnista" :key="inv.id" :value="inv.finca_id">
+                    {{ inv.nombre_ficticio }} — {{ inv.cantidad_animales }} animales
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div class="vf-group">
+              <label class="vf-label">Tipo de visita</label>
+              <div class="tipo-visita-options">
+                <button
+                  v-for="t in [
+                    { val: 'pesaje',            label: 'Pesaje',            color: 'azul'    },
+                    { val: 'vacunacion',        label: 'Vacunación',        color: 'verde'   },
+                    { val: 'revision',          label: 'Revisión',          color: 'cyan'    },
+                    { val: 'control_sanitario', label: 'Control Sanitario', color: 'naranja' }
+                  ]"
+                  :key="t.val"
+                  class="tipo-visita-btn"
+                  :class="{ active: visitaForm.tipo === t.val, ['tv-' + t.color]: visitaForm.tipo === t.val }"
+                  @click="visitaForm.tipo = t.val">
+                  {{ t.label }}
+                </button>
+              </div>
+            </div>
+
+            <div class="vf-row">
+              <div class="vf-group">
+                <label class="vf-label">Hora</label>
+                <input v-model="visitaForm.hora_visita" type="time" class="vf-input" />
+              </div>
+            </div>
+
+            <div class="vf-group">
+              <label class="vf-label">Notas (opcional)</label>
+              <textarea v-model="visitaForm.notas" rows="2" placeholder="Instrucciones adicionales..." class="vf-textarea"></textarea>
+            </div>
+
+          </div>
+
+          <div class="modal-btns">
+            <button class="btn-secondary" @click="modalVisita = false">Cancelar</button>
+            <button class="btn-primary"
+              @click="crearVisita"
+              :disabled="!visitaForm.zootecnista_id || !visitaForm.finca_id">
+              📅 Guardar visita
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- ══ MODAL REGISTRO ANIMALES ══ -->
+    <Teleport to="body">
+      <div class="modal-overlay" v-if="modalAnimales" @click.self="modalAnimales = false">
+        <div class="modal-animales-wrap">
+          <!-- Header fijo -->
+          <div class="modal-animales-header">
+            <div>
+              <h3 class="modal-titulo">Registrar Pesos de Animales</h3>
+              <p class="modal-sub">
+                {{ inversionAnimales?.inversor_nombre }} —
+                {{ inversionAnimales?.cantidad_animales }} animales en {{ inversionAnimales?.nombre_ficticio }}
+              </p>
+            </div>
+            <button class="modal-close" @click="modalAnimales = false">✕</button>
+          </div>
+
+          <!-- Contenido con scroll -->
+          <div class="modal-animales-body">
+            <div class="af-header">
+              <span>Código</span>
+              <span>Peso Inicial (kg) *</span>
+            </div>
+            <div class="af-row" v-for="(animal, idx) in animalesForm" :key="idx">
+              <input v-model="animal.codigo" type="text" class="af-input codigo" placeholder="GAN001" />
+              <div class="af-peso-wrap">
+                <input
+                  v-model="animal.peso_inicial" type="number"
+                  class="af-input" :class="{ 'af-filled': animal.peso_inicial > 0 }"
+                  placeholder="Ej: 285" min="0"
+                />
+                <span class="af-kg">kg</span>
+              </div>
+            </div>
+
+            <div class="af-resumen" v-if="animalesForm.filter(a => a.peso_inicial > 0).length > 0">
+              <span>Registrados: <strong>{{ animalesForm.filter(a => a.peso_inicial > 0).length }}</strong>/{{ animalesForm.length }}</span>
+              <span>Peso promedio: <strong>{{ promedioAnimales }}</strong> kg</span>
+            </div>
+
+            <div class="alert-success" v-if="exitoAnimales">{{ exitoAnimales }}</div>
+            <div class="alert-error"   v-if="errorAnimales">{{ errorAnimales }}</div>
+          </div>
+
+          <!-- Footer fijo con botones -->
+          <div class="modal-animales-footer">
+            <button class="btn-secondary" @click="modalAnimales = false">Cancelar</button>
+            <button class="btn-primary" @click="guardarAnimales" :disabled="guardandoAnimales">
+              {{ guardandoAnimales ? 'Guardando...' : '✓ Guardar pesos' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -458,12 +651,13 @@ const seccionActiva = ref('resumen')
 
 // ── Nav items ─────────────────────────────────────
 const navItems = computed(() => [
-  { id: 'resumen',    label: 'Resumen',      badge: 0, icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>` },
-  { id: 'fincas',     label: 'Fincas',       badge: fincasPendientes.value.length, icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>` },
-  { id: 'inversiones',label: 'Inversiones',  badge: inversionesPendientes.value.length, icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>` },
-  { id: 'usuarios',   label: 'Usuarios',     badge: usuariosPendientes.value.length, icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>` },
-  { id: 'config',     label: 'Configuración',badge: 0, icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>` },
-  { id: 'zootecnistas', label: 'Zootecnistas', badge: 0, icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>` },
+  { id: 'resumen',      label: 'Resumen',        badge: 0, icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>` },
+  { id: 'fincas',       label: 'Fincas',         badge: fincasPendientes.value.length, icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>` },
+  { id: 'inversiones',  label: 'Inversiones',    badge: inversionesPendientes.value.length, icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>` },
+  { id: 'usuarios',     label: 'Usuarios',       badge: usuariosPendientes.value.length, icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>` },
+  { id: 'visitas',      label: 'Visitas',        badge: 0, icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>` },
+  { id: 'zootecnistas', label: 'Zootecnistas',   badge: 0, icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>` },
+  { id: 'config',       label: 'Configuración',  badge: 0, icon: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>` },
 ])
 
 // ── Datos ─────────────────────────────────────────
@@ -472,12 +666,13 @@ const todasInversiones = ref([])
 const todosUsuarios    = ref([])
 const zootecnistas     = ref([])
 const config           = ref(null)
+const todasVisitas     = ref([])
 
 const filtroFincas      = ref('todas')
 const filtroInversiones = ref('todas')
 const filtroUsuarios    = ref('todos')
 
-const fincasPendientes     = computed(() => todasFincas.value.filter(f => f.estado === 'pendiente'))
+const fincasPendientes      = computed(() => todasFincas.value.filter(f => f.estado === 'pendiente'))
 const inversionesPendientes = computed(() => todasInversiones.value.filter(i => i.estado === 'pendiente_reunion'))
 const usuariosPendientes    = computed(() => todosUsuarios.value.filter(u => !u.aprobado && u.rol !== 'inversionista' && u.rol !== 'administrador'))
 
@@ -499,34 +694,169 @@ const statsResumen = computed(() => [
 ])
 
 // ── Config ────────────────────────────────────────
-const configForm     = reactive({ precio_kilo: 0, peso_animal_kg: 0 })
-const configExito    = ref('')
-const configError    = ref('')
+const configForm      = reactive({ precio_kilo: 0, peso_animal_kg: 0 })
+const configExito     = ref('')
+const configError     = ref('')
 const guardandoConfig = ref(false)
 
-// ── Modales ───────────────────────────────────────
-const modalRechazarFinca      = ref(false)
-const modalRechazarInversion  = ref(false)
-const motivoRechazo           = ref('')
-const motivoRechazoInversion  = ref('')
-const fincaArechazar          = ref(null)
-const inversionArechazar      = ref(null)
-const inversionExpandida = ref(null)
-const animalesInversion  = ref([])
-const cargandoAnimales   = ref(false)
+// ── Modales fincas/inversiones ────────────────────
+const modalRechazarFinca     = ref(false)
+const modalRechazarInversion = ref(false)
+const motivoRechazo          = ref('')
+const motivoRechazoInversion = ref('')
+const fincaArechazar         = ref(null)
+const inversionArechazar     = ref(null)
+const inversionExpandida     = ref(null)
+const animalesInversion      = ref([])
+const cargandoAnimales       = ref(false)
+const modalAnimales     = ref(false)
+const inversionAnimales = ref(null)
+const animalesForm      = ref([])
+const guardandoAnimales = ref(false)
+const exitoAnimales     = ref('')
+const errorAnimales     = ref('')
 
-// ── Funciones ─────────────────────────────────────
+// ── Calendario visitas ────────────────────────────
+const mesActual              = ref(new Date().getMonth())
+const anioActual             = ref(new Date().getFullYear())
+const diaSeleccionado        = ref(null)
+const modalVisita            = ref(false)
+const inversionesZootecnista = ref([])
+const cargandoInversiones    = ref(false)
+
+const visitaForm = reactive({
+  zootecnista_id: '',
+  finca_id:       '',
+  fecha_visita:   '',
+  hora_visita:    '08:00',
+  tipo:           'pesaje',
+  notas:          ''
+})
+
+const nombreMes = computed(() => {
+  return new Date(anioActual.value, mesActual.value).toLocaleDateString('es-CO', { month: 'long', year: 'numeric' })
+})
+
+const diasCalendario = computed(() => {
+  const primer = new Date(anioActual.value, mesActual.value, 1)
+  const ultimo = new Date(anioActual.value, mesActual.value + 1, 0)
+  const hoy    = new Date()
+  const dias   = []
+
+  for (let i = 0; i < primer.getDay(); i++) {
+    const d = new Date(anioActual.value, mesActual.value, -primer.getDay() + i + 1)
+    dias.push({ numero: d.getDate(), esEsteMes: false, esPasado: true, fecha: d, visitas: [] })
+  }
+
+  for (let d = 1; d <= ultimo.getDate(); d++) {
+    const fecha    = new Date(anioActual.value, mesActual.value, d)
+    const esPasado = fecha < new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate())
+    const esHoy    = fecha.toDateString() === hoy.toDateString()
+    const visitasDia = todasVisitas.value.filter(v => {
+      const fv = new Date(v.fecha_visita)
+      return fv.getDate() === d && fv.getMonth() === mesActual.value && fv.getFullYear() === anioActual.value
+    })
+    dias.push({ numero: d, esEsteMes: true, esPasado, esHoy, fecha, visitas: visitasDia })
+  }
+
+  while (dias.length < 42) {
+    const d = new Date(anioActual.value, mesActual.value + 1, dias.length - ultimo.getDate() - primer.getDay() + 1)
+    dias.push({ numero: d.getDate(), esEsteMes: false, esPasado: true, fecha: d, visitas: [] })
+  }
+  return dias
+})
+
+// ── Helpers ───────────────────────────────────────
 function formatCOP(val) {
   if (!val) return '$0'
   return '$' + Math.round(val).toLocaleString('es-CO')
 }
+function formatFecha(f) {
+  if (!f) return '—'
+  return new Date(f).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
+}
+function formatHora(f) {
+  if (!f) return ''
+  return new Date(f).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
+}
+function tipoLabel(tipo) {
+  const map = { pesaje: 'Pesaje', vacunacion: 'Vacunación', revision: 'Revisión', control_sanitario: 'Control Sanitario' }
+  return map[tipo] || tipo
+}
+function tipoColor(tipo) {
+  const map = { pesaje: 'azul', vacunacion: 'verde', revision: 'cyan', control_sanitario: 'naranja' }
+  return map[tipo] || 'azul'
+}
 
+// ── Funciones calendario ──────────────────────────
+function mesAnterior() {
+  if (mesActual.value === 0) { mesActual.value = 11; anioActual.value-- }
+  else mesActual.value--
+}
+function mesSiguiente() {
+  if (mesActual.value === 11) { mesActual.value = 0; anioActual.value++ }
+  else mesActual.value++
+}
+
+async function abrirModalVisita(dia) {
+  if (dia.esPasado || !dia.esEsteMes) return
+  diaSeleccionado.value = dia
+  const fecha = dia.fecha
+  visitaForm.fecha_visita   = `${fecha.getFullYear()}-${String(fecha.getMonth()+1).padStart(2,'0')}-${String(fecha.getDate()).padStart(2,'0')}`
+  visitaForm.zootecnista_id = ''
+  visitaForm.finca_id       = ''
+  visitaForm.hora_visita    = '08:00'
+  visitaForm.tipo           = 'pesaje'
+  visitaForm.notas          = ''
+  inversionesZootecnista.value = []
+  modalVisita.value = true
+}
+
+async function cargarInversionesZootecnista() {
+  if (!visitaForm.zootecnista_id) return
+  cargandoInversiones.value = true
+  try {
+    const { data } = await axios.get(
+      `${API}/admin/zootecnistas/${visitaForm.zootecnista_id}/inversiones`,
+      { headers: headers.value }
+    )
+    inversionesZootecnista.value = data
+    visitaForm.finca_id = ''
+  } catch {}
+  cargandoInversiones.value = false
+}
+
+async function crearVisita() {
+  try {
+    const fechaHora = `${visitaForm.fecha_visita}T${visitaForm.hora_visita}:00`
+    await axios.post(`${API}/admin/visitas`, {
+      zootecnista_id: visitaForm.zootecnista_id,
+      finca_id:       visitaForm.finca_id,
+      fecha_visita:   fechaHora,
+      tipo:           visitaForm.tipo,
+      notas:          visitaForm.notas
+    }, { headers: headers.value })
+    modalVisita.value = false
+    await cargarVisitas()
+  } catch (err) {
+    alert(err.response?.data?.error || 'Error creando visita')
+  }
+}
+
+async function cargarVisitas() {
+  try {
+    const { data } = await axios.get(`${API}/admin/visitas`, { headers: headers.value })
+    todasVisitas.value = data
+  } catch {}
+}
+
+// ── Funciones principales ─────────────────────────
 async function cargarTodo() {
   try {
     const [fincasRes, invRes, usersRes, configRes] = await Promise.all([
-      axios.get(`${API}/fincas`,      { headers: headers.value }),
-      axios.get(`${API}/inversiones`, { headers: headers.value }),
-      axios.get(`${API}/admin/usuarios`, { headers: headers.value }),
+      axios.get(`${API}/fincas`,             { headers: headers.value }),
+      axios.get(`${API}/inversiones`,        { headers: headers.value }),
+      axios.get(`${API}/admin/usuarios`,     { headers: headers.value }),
       axios.get(`${API}/inversiones/configuracion`)
     ])
     todasFincas.value      = fincasRes.data
@@ -536,6 +866,7 @@ async function cargarTodo() {
     configForm.precio_kilo    = configRes.data.precio_kilo
     configForm.peso_animal_kg = configRes.data.peso_animal_kg
     cargarZootecnistas()
+    cargarVisitas()
   } catch (err) {
     console.error('Error cargando datos admin:', err)
   }
@@ -551,8 +882,8 @@ async function aprobarFinca(id) {
 }
 
 function abrirRechazarFinca(finca) {
-  fincaArechazar.value  = finca
-  motivoRechazo.value   = ''
+  fincaArechazar.value     = finca
+  motivoRechazo.value      = ''
   modalRechazarFinca.value = true
 }
 
@@ -578,9 +909,9 @@ async function aprobarInversion(id) {
 }
 
 function abrirRechazarInversion(inv) {
-  inversionArechazar.value       = inv
-  motivoRechazoInversion.value   = ''
-  modalRechazarInversion.value   = true
+  inversionArechazar.value     = inv
+  motivoRechazoInversion.value = ''
+  modalRechazarInversion.value = true
 }
 
 async function confirmarRechazarInversion() {
@@ -596,7 +927,7 @@ async function confirmarRechazarInversion() {
 }
 
 async function finalizarInversion(id) {
-  if (!confirm('¿Confirmas que esta inversión ha finalizado y todas las partes han firmado?')) return
+  if (!confirm('¿Confirmas que esta inversión ha finalizado?')) return
   try {
     await axios.put(`${API}/inversiones/${id}/finalizar`, {}, { headers: headers.value })
     await cargarTodo()
@@ -615,8 +946,8 @@ async function aprobarUsuario(usuario) {
 }
 
 async function guardarConfig() {
-  configExito.value    = ''
-  configError.value    = ''
+  configExito.value     = ''
+  configError.value     = ''
   guardandoConfig.value = true
   try {
     await axios.put(`${API}/inversiones/configuracion`, configForm, { headers: headers.value })
@@ -627,11 +958,6 @@ async function guardarConfig() {
   } finally {
     guardandoConfig.value = false
   }
-}
-
-async function cerrarSesion() {
-  await auth.logout()
-  router.push('/')
 }
 
 async function verAnimales(inv) {
@@ -645,11 +971,8 @@ async function verAnimales(inv) {
   try {
     const { data } = await axios.get(`${API}/admin/inversiones/${inv.id}/animales`, { headers: headers.value })
     animalesInversion.value = data
-  } catch (err) {
-    console.error('Error cargando animales:', err)
-  } finally {
-    cargandoAnimales.value = false
-  }
+  } catch {}
+  cargandoAnimales.value = false
 }
 
 async function cargarZootecnistas() {
@@ -657,6 +980,52 @@ async function cargarZootecnistas() {
     const { data } = await axios.get(`${API}/admin/zootecnistas`, { headers: headers.value })
     zootecnistas.value = data
   } catch {}
+}
+
+function abrirRegistroAnimales(inv) {
+  inversionAnimales.value = inv
+  // Generar lista de animales con campos vacíos
+  animalesForm.value = Array.from({ length: inv.cantidad_animales }, (_, i) => ({
+    codigo:        `GAN${String(i + 1).padStart(3, '0')}`,
+    peso_inicial:  ''
+  }))
+  exitoAnimales.value = ''
+  errorAnimales.value = ''
+  modalAnimales.value = true
+}
+
+async function guardarAnimales() {
+  const incompletos = animalesForm.value.filter(a => !a.peso_inicial || a.peso_inicial <= 0)
+  if (incompletos.length > 0) {
+    errorAnimales.value = `Faltan ${incompletos.length} animal(es) sin peso registrado`
+    return
+  }
+  guardandoAnimales.value = true
+  errorAnimales.value = ''
+  try {
+    await axios.post(
+      `${API}/inversiones/${inversionAnimales.value.id}/animales`,
+      { animales: animalesForm.value },
+      { headers: headers.value }
+    )
+    exitoAnimales.value = `✓ ${animalesForm.value.length} animales registrados correctamente`
+    await cargarTodo()
+  } catch (err) {
+    errorAnimales.value = err.response?.data?.error || 'Error registrando animales'
+  } finally {
+    guardandoAnimales.value = false
+  }
+}
+
+const promedioAnimales = computed(() => {
+  const conPeso = animalesForm.value.filter(a => a.peso_inicial > 0)
+  if (conPeso.length === 0) return 0
+  return (conPeso.reduce((a, b) => a + parseFloat(b.peso_inicial), 0) / conPeso.length).toFixed(1)
+})
+
+async function cerrarSesion() {
+  await auth.logout()
+  router.push('/')
 }
 
 onMounted(cargarTodo)
@@ -920,11 +1289,12 @@ onMounted(cargarTodo)
 /* Botones */
 .btn-primary {
   all: unset; cursor: pointer;
-  background: var(--gris); color: #fff;
+  background: var(--gris) !important; color: #fff !important;
   font-size: 0.88rem; font-weight: 600;
   padding: 0.85rem 1.8rem; border-radius: 100px;
   display: inline-block; text-align: center;
-  transition: opacity 0.2s; -webkit-user-select: none; user-select: none;
+  transition: opacity 0.2s;
+  -webkit-user-select: none; user-select: none;
 }
 .btn-primary:hover:not(:disabled) { opacity: 0.88; }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -932,17 +1302,30 @@ onMounted(cargarTodo)
 /* Modal */
 .modal-overlay {
   position: fixed; inset: 0; z-index: 1000;
-  background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.6);
   display: flex; align-items: center; justify-content: center; padding: 1rem;
 }
 .modal-card {
-  background: var(--blanco); border-radius: 16px; padding: 2rem;
+  background: #FFFFFF;
+  border-radius: 16px; padding: 2rem;
   width: 100%; max-width: 480px;
+  max-height: 85vh;
+  overflow-y: auto;
   box-shadow: 0 24px 80px rgba(0,0,0,0.3);
+  position: relative; z-index: 1001;
 }
 .modal-titulo { font-family: 'Anton', sans-serif; font-size: 1.2rem; color: var(--gris); margin-bottom: 0.4rem; }
 .modal-sub    { font-size: 0.83rem; color: var(--muted); margin-bottom: 1.2rem; }
-.modal-btns   { display: flex; gap: 0.8rem; justify-content: flex-end; margin-top: 1.2rem; }
+.modal-btns {
+  display: flex; gap: 0.8rem;
+  justify-content: flex-end;
+  margin-top: 1.2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  position: sticky;
+  bottom: 0;
+  background: #fff;
+}
 .btn-secondary {
   all: unset; cursor: pointer;
   border: 1.5px solid var(--border); color: var(--muted);
@@ -1044,4 +1427,165 @@ onMounted(cargarTodo)
 }
 .zoo-sin-fincas { font-size: 0.78rem; color: var(--muted); }
 
+/* Calendario admin */
+.calendario-wrap { background: var(--blanco); border-radius: 16px; padding: 1.5rem; border: 1px solid var(--border); }
+.calendario-nav  { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+.cal-mes-titulo  { font-family: 'Anton', sans-serif; font-size: 1.1rem; color: var(--texto); text-transform: capitalize; }
+.cal-nav-btn     { all: unset; cursor: pointer; width: 32px; height: 32px; border-radius: 8px; background: #F3F4F6; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--texto); transition: background 0.2s; }
+.cal-nav-btn:hover { background: #E5E7EB; }
+
+.cal-leyenda { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.leyenda-item { font-size: 0.72rem; font-weight: 600; padding: 0.25rem 0.7rem; border-radius: 100px; color: #fff; }
+.cal-azul    { background: #2563EB; }
+.cal-verde   { background: #16A34A; }
+.cal-cyan    { background: #0891B2; }
+.cal-naranja { background: #D97706; }
+
+.calendario-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.cal-dia-header  { text-align: center; font-size: 0.72rem; font-weight: 700; color: var(--muted); padding: 0.5rem; text-transform: uppercase; }
+.cal-dia-cell    { min-height: 90px; padding: 0.4rem; border: 1px solid #F3F4F6; border-radius: 6px; background: var(--blanco); }
+.cal-dia-cell.otro-mes  { background: #FAFAFA; }
+.cal-dia-cell.es-pasado { background: #FAFAFA; cursor: not-allowed; }
+.cal-dia-cell.es-hoy    { background: #EFF6FF; border-color: var(--gris); }
+.cal-dia-cell.es-futuro { cursor: pointer; transition: background 0.2s; }
+.cal-dia-cell.es-futuro:hover { background: #F3F4F6; border-color: var(--gris-mid); }
+.cal-dia-cell.tiene-visita { background: #F0FDF4; }
+.cal-num { font-size: 0.82rem; font-weight: 600; color: var(--texto); display: block; margin-bottom: 0.3rem; }
+.cal-dia-cell.es-hoy .cal-num { background: var(--gris); color: #fff; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; }
+.cal-dia-cell.otro-mes .cal-num { color: #D1D5DB; }
+.cal-dia-cell.es-pasado .cal-num { color: #D1D5DB; }
+
+.cal-visitas { display: flex; flex-direction: column; gap: 2px; }
+.cal-visita-chip { border-radius: 4px; padding: 0.25rem 0.4rem; }
+.cal-chip-zoo    { font-size: 0.62rem; color: #fff; font-weight: 700; display: block; }
+.cal-chip-tipo   { font-size: 0.58rem; color: rgba(255,255,255,0.85); display: block; }
+.cal-chip-estado { font-size: 0.58rem; color: rgba(255,255,255,0.75); display: block; }
+.cal-mas { font-size: 0.62rem; color: var(--muted); }
+
+/* Tipo visita options */
+.tipo-visita-options { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+.tipo-visita-btn {
+  all: unset; cursor: pointer;
+  border: 1.5px solid var(--border); border-radius: 8px;
+  padding: 0.6rem; text-align: center;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 0.8rem; color: var(--muted);
+  transition: all 0.2s; -webkit-user-select: none; user-select: none;
+}
+.tipo-visita-btn:hover { border-color: var(--gris-mid); }
+.tipo-visita-btn.active.tv-azul    { background: #DBEAFE; border-color: #2563EB; color: #2563EB; font-weight: 700; }
+.tipo-visita-btn.active.tv-verde   { background: #D1FAE5; border-color: #16A34A; color: #16A34A; font-weight: 700; }
+.tipo-visita-btn.active.tv-cyan    { background: #CFFAFE; border-color: #0891B2; color: #0891B2; font-weight: 700; }
+.tipo-visita-btn.active.tv-naranja { background: #FEF3C7; border-color: #D97706; color: #D97706; font-weight: 700; }
+
+/* Visita form */
+.visita-form { display: flex; flex-direction: column; gap: 1rem; margin: 1.2rem 0; }
+.vf-group    { display: flex; flex-direction: column; gap: 0.35rem; }
+.vf-label    { font-family: 'Open Sans', sans-serif; font-size: 0.75rem; font-weight: 700; color: var(--texto); letter-spacing: 0.04em; text-transform: uppercase; }
+.vf-select-wrap { position: relative; }
+.vf-select {
+  all: unset; display: block; width: 100%; box-sizing: border-box;
+  border: 1.5px solid var(--border); border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  font-family: 'Open Sans', sans-serif; font-size: 0.88rem; color: var(--texto);
+  background: #F9FAFB; cursor: pointer;
+  transition: border-color 0.2s;
+}
+.vf-select:focus { border-color: var(--gris); background: #fff; }
+.vf-input {
+  all: unset; display: block; width: 100%; box-sizing: border-box;
+  border: 1.5px solid var(--border); border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  font-family: 'Open Sans', sans-serif; font-size: 0.88rem; color: var(--texto);
+  background: #F9FAFB; transition: border-color 0.2s;
+}
+.vf-input:focus { border-color: var(--gris); background: #fff; }
+.vf-textarea {
+  all: unset; display: block; width: 100%; box-sizing: border-box;
+  border: 1.5px solid var(--border); border-radius: 10px;
+  padding: 0.75rem 0.9rem; min-height: 70px;
+  font-family: 'Open Sans', sans-serif; font-size: 0.85rem; color: var(--texto);
+  background: #F9FAFB; resize: vertical; transition: border-color 0.2s;
+}
+.vf-textarea:focus { border-color: var(--gris); background: #fff; }
+.vf-loading { font-size: 0.8rem; color: var(--muted); padding: 0.5rem 0; }
+.vf-row { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+
+/* Registro animales */
+.animales-form-wrap { margin: 1.2rem 0; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.af-header {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 1rem; padding: 0.7rem 1rem;
+  background: #F9FAFB; font-size: 0.72rem; font-weight: 700;
+  color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em;
+}
+.af-row {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 1rem; padding: 0.6rem 1rem;
+  border-top: 1px solid #F3F4F6; align-items: center;
+}
+.af-row:hover { background: #FAFAFA; }
+.af-codigo-wrap, .af-peso-wrap { display: flex; align-items: center; gap: 0.4rem; }
+.af-input {
+  all: unset; border: 1.5px solid var(--border); border-radius: 8px;
+  padding: 0.5rem 0.7rem; font-size: 0.85rem; color: var(--texto);
+  width: 100%; box-sizing: border-box; transition: border-color 0.2s;
+  font-family: monospace;
+}
+.af-input:focus { border-color: var(--gris); }
+.af-input.af-filled { border-color: #16A34A; background: #F0FDF4; }
+.af-input.codigo { font-weight: 700; color: var(--gris); }
+.af-kg { font-size: 0.78rem; color: var(--muted); flex-shrink: 0; }
+.af-resumen {
+  display: flex; justify-content: space-between;
+  background: #F0FDF4; border-radius: 8px; padding: 0.7rem 1rem;
+  font-size: 0.82rem; color: var(--muted); margin-bottom: 0.5rem;
+}
+.af-resumen strong { color: var(--verde, #1B4332); }
+.modal-animales-wrap {
+  background: #FFFFFF;
+  border-radius: 16px;
+  width: 100%; max-width: 560px;
+  max-height: 85vh;
+  display: flex; flex-direction: column;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.3);
+  position: relative; z-index: 1001;
+  overflow: hidden;
+}
+.modal-animales-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 1.4rem 1.6rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  background: #fff;
+}
+.modal-animales-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem 1.6rem;
+}
+.modal-animales-footer {
+  display: flex; justify-content: flex-end; gap: 0.8rem;
+  padding: 1rem 1.6rem;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+  background: #fff;
+}
+.page-title    { letter-spacing: 0.05em; }
+.section-title { letter-spacing: 0.05em; }
+.banner-nombre { letter-spacing: 0.05em; }
+.mf-nombre     { letter-spacing: 0.05em; }
+.gc-val        { letter-spacing: 0.05em; }
+.stat-prop-icon-svg { color: var(--cafe); margin-bottom: 0.5rem; }
+.modal-animales-footer .btn-primary {
+  background: #374151 !important;
+  color: #ffffff !important;
+  padding: 0.7rem 1.4rem;
+  border-radius: 100px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  font-family: 'Open Sans', sans-serif;
+}
 </style>

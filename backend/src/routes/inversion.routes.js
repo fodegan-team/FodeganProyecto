@@ -5,7 +5,7 @@ const {
   getConfiguracion, updateConfiguracion,
   crearInversion, aprobarInversion, rechazarInversion,
   getMisInversiones, getDetalleInversion,
-  getAllInversiones, finalizarInversion
+  getAllInversiones, finalizarInversion, registrarAnimalesInversion
 } = require('../controllers/inversion.controller')
 
 const { verificarToken, verificarRol } = require('../middlewares/auth.middleware')
@@ -18,7 +18,7 @@ router.put('/configuracion', verificarToken, verificarRol('administrador'), upda
 router.post('/',      verificarToken, verificarRol('inversionista'), crearInversion)
 router.get('/mias',   verificarToken, verificarRol('inversionista'), getMisInversiones)
 router.get('/:id',    verificarToken, verificarRol('inversionista'), getDetalleInversion)
-
+router.post('/:id/animales', verificarToken, verificarRol('administrador'), registrarAnimalesInversion)
 // Admin
 router.get('/',              verificarToken, verificarRol('administrador'), getAllInversiones)
 router.put('/:id/aprobar',   verificarToken, verificarRol('administrador'), aprobarInversion)

@@ -181,12 +181,32 @@ async function correoInversionFinalizada(inversion) {
   })
 }
 
+async function correoConfirmacionVisita(propietario, visita) {
+  const tipoLabel = {
+    pesaje: 'Pesaje', vacunacion: 'Vacunación',
+    revision: 'Revisión General', control_sanitario: 'Control Sanitario'
+  }
+  await transporter.sendMail({
+    from:    process.env.EMAIL_FROM,
+    to:      propietario.email,
+    subject: '📅 Confirmación de visita técnica — FODEGAN',
+    html: plantillaBase(`
+      <h2>Solicitud de visita técnica</h2>
+      <p>Hola <strong>${propietario.nombre}</strong>, el equipo de FODEGAN ha programado una visita técnica a tu finca.</p>
+      <div class="highlight">
+        <p><strong>Finca:</strong> ${visita.finca}</p>
+        <p><strong>Zootecnista:</strong> ${visita.zootecnista}</p>
+        <p><strong>Fecha:</strong> ${new Date(visita.fecha_visita).toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
+        <p><strong>Tipo:</strong> ${tipoLabel[visita.tipo] || visita.tipo}</p>
+      </div>
+      <p>Por favor confirma si puedes recibir al zootecnista en esa fecha ingresando a tu dashboard en FODEGAN.</p>
+    `)
+  })
+}
+
 module.exports = {
-  correoFincaAprobada,
-  correoFincaRechazada,
-  correoInversionCreada,
-  correoInversionAprobada,
-  correoInversionCancelada,
-  correoZootecnistaAprobado,
-  correoInversionFinalizada
+  correoFincaAprobada, correoFincaRechazada,
+  correoInversionCreada, correoInversionAprobada,
+  correoInversionCancelada, correoZootecnistaAprobado,
+  correoInversionFinalizada, correoConfirmacionVisita
 }

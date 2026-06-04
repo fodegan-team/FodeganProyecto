@@ -13,6 +13,7 @@ const inversionRoutes = require('./routes/inversion.routes')
 
 const server = express()
 const PORT   = process.env.PORT || 3000
+const propietarioRoutes = require('./routes/propietario.routes')
 
 server.use(helmet())
 server.use(cors({
@@ -21,7 +22,8 @@ server.use(cors({
   methods:     ['GET', 'POST', 'PUT', 'DELETE']
 }))
 
-server.use(express.json({ limit: '10kb' }))
+server.use(express.json({ limit: '50mb' }))
+server.use(express.urlencoded({ extended: true, limit: '50mb' }))
 server.use(express.urlencoded({ extended: true }))
 server.use(cookieParser())
 
@@ -49,7 +51,7 @@ server.use('/api/inversiones',inversionRoutes)
 server.use('/api/fincas', fincaRoutes)
 server.use('/api/admin', adminRoutes)
 server.use('/api/zootecnista', zootecnistaRoutes)
-
+server.use('/api/propietario', propietarioRoutes)
 // ── Health check ──────────────────────────────────
 server.get('/api/health', (_req, res) => {
   res.json({ status: 'OK', app: 'FODEGAN API v0.1' })

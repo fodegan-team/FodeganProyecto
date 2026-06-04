@@ -188,6 +188,77 @@ async function migrate() {
       )
     `)
 
+    // ── VISITAS ───────────────────────────────────────
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS visitas (
+        id              INT PRIMARY KEY AUTO_INCREMENT,
+        zootecnista_id  INT NOT NULL,
+        finca_id        INT NOT NULL,
+        fecha_visita    DATETIME NOT NULL,
+        tipo            ENUM('pesaje','vacunacion','revision','control_sanitario') DEFAULT 'pesaje',
+        estado          ENUM('pendiente','confirmada','completada','cancelada') DEFAULT 'pendiente',
+        notas           TEXT NULL,
+        created_by      INT NOT NULL,
+        created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (zootecnista_id) REFERENCES usuarios(id),
+        FOREIGN KEY (finca_id)       REFERENCES fincas(id),
+        FOREIGN KEY (created_by)     REFERENCES usuarios(id)
+      )
+    `)
+
+    // ── REPORTES TÉCNICOS ─────────────────────────────
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS reportes_tecnicos (
+        id              INT PRIMARY KEY AUTO_INCREMENT,
+        animal_id       INT NOT NULL,
+        inversion_id    INT NOT NULL,
+        zootecnista_id  INT NOT NULL,
+        visita_id       INT NULL,
+        tipo_revision   ENUM('control_sanitario','vacunacion','control_peso','revision_general') NOT NULL,
+        estado_animal   ENUM('excelente','bueno','regular','enfermo','muerto') NOT NULL,
+        observaciones   TEXT NOT NULL,
+        created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (animal_id)      REFERENCES animales(id)    ON DELETE CASCADE,
+        FOREIGN KEY (inversion_id)   REFERENCES inversiones(id) ON DELETE CASCADE,
+        FOREIGN KEY (zootecnista_id) REFERENCES usuarios(id),
+        FOREIGN KEY (visita_id)      REFERENCES visitas(id)     ON DELETE SET NULL
+      )
+    `)
+
+    // ── EVIDENCIAS ────────────────────────────────────
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS evidencias (
+        id              INT PRIMARY KEY AUTO_INCREMENT,
+        animal_id       INT NOT NULL,
+        inversion_id    INT NOT NULL,
+        zootecnista_id  INT NOT NULL,
+        reporte_id      INT NULL,
+        url_imagen      VARCHAR(500) NOT NULL,
+        descripcion     VARCHAR(255) NULL,
+        created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (animal_id)      REFERENCES animales(id)          ON DELETE CASCADE,
+        FOREIGN KEY (inversion_id)   REFERENCES inversiones(id)       ON DELETE CASCADE,
+        FOREIGN KEY (zootecnista_id) REFERENCES usuarios(id),
+        FOREIGN KEY (reporte_id)     REFERENCES reportes_tecnicos(id) ON DELETE SET NULL
+      )
+    `)
+
+    // ── ALERTAS SANITARIAS ────────────────────────────
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS alertas_sanitarias (
+        id              INT PRIMARY KEY AUTO_INCREMENT,
+        animal_id       INT NOT NULL,
+        inversion_id    INT NOT NULL,
+        zootecnista_id  INT NOT NULL,
+        descripcion     TEXT NOT NULL,
+        urgencia        ENUM('baja','media','alta','critica') DEFAULT 'media',
+        estado          ENUM('activa','resuelta') DEFAULT 'activa',
+        created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (animal_id)      REFERENCES animales(id)    ON DELETE CASCADE,
+        FOREIGN KEY (inversion_id)   REFERENCES inversiones(id) ON DELETE CASCADE,
+        FOREIGN KEY (zootecnista_id) REFERENCES usuarios(id)
+      )
+    `)
     console.log('✅ Todas las tablas creadas correctamente')
     process.exit(0)
   } catch (err) {

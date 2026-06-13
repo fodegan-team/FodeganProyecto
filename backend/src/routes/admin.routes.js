@@ -5,7 +5,7 @@ const {
   getUsuarios, aprobarUsuario, getAnimalesInversion,
   asignarZootecnista, getZootecnistas,
   crearVisita, getVisitas, getAlertasSanitarias,
-  getInversionesZootecnista
+  getInversionesZootecnista,getReportesInversion
 } = require('../controllers/admin.controller')
 
 const { verificarToken, verificarRol } = require('../middlewares/auth.middleware')
@@ -20,5 +20,7 @@ router.post('/visitas',                        ...auth, crearVisita)
 router.get('/visitas',                         ...auth, getVisitas)
 router.get('/alertas',                         ...auth, getAlertasSanitarias)
 router.get('/zootecnistas/:zootecnista_id/inversiones', ...auth, getInversionesZootecnista)
+router.get('/inversiones/:id/reportes', verificarToken, verificarRol('administrador'), getReportesInversion)
 
 module.exports = router
+

@@ -254,7 +254,16 @@ const getDetalleInversion = async (req, res) => {
       ORDER BY c.created_at DESC
     `, [id])
 
-    res.json({ inversion, animales, seguimiento, comentarios })
+    const [reportes] = await pool.query(`
+      SELECT rt.*, u.nombre as zootecnista_nombre, a.codigo as animal_codigo
+      FROM reportes_tecnicos rt
+      JOIN usuarios u ON rt.zootecnista_id = u.id
+      LEFT JOIN animales a ON rt.animal_id = a.id
+      WHERE rt.inversion_id = ?
+      ORDER BY rt.created_at DESC
+    `, [id])
+
+    res.json({ inversion, animales, seguimiento, comentarios, reportes })
   } catch (err) {
     console.error('Error getDetalleInversion:', err)
     res.status(500).json({ error: 'Error obteniendo detalle' })

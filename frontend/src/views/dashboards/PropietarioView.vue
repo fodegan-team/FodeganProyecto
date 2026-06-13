@@ -4,7 +4,7 @@
     <!-- ══ SIDEBAR ══ -->
     <aside class="sidebar">
       <div class="sidebar-logo">
-        <span class="logo-text">FODEGAN</span>
+        <img src="/images/LogoFodegan.png" alt="FODEGAN" class="logo-img" />
         <span class="logo-sub">Fondo de Inversiones Ganadero</span>
       </div>
 
@@ -1169,5 +1169,10 @@ onMounted(() => {
 .notif-txt    { font-size: 0.82rem; font-weight: 600; color: var(--texto); }
 .notif-fecha  { font-size: 0.72rem; color: var(--muted); margin-top: 0.1rem; }
 .notif-btns   { display: flex; gap: 0.4rem; margin-top: 0.5rem; }
+.logo-img {
+  width: 120px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
 
 </style>

@@ -36,7 +36,7 @@ test.describe('E2E 2: Flujo de login', () => {
     await page.waitForSelector('.modal-split', { state: 'visible' })
 
     await page.fill('input[type="email"]',    'jairojocadi@hotmail.com')
-    await page.fill('input[type="password"]', 'Mariajose1728')
+    await page.fill('input[type="password"]', 'Fodegan2026')
     await page.locator('.btn-ingresar').click()
 
     await page.waitForURL(/dashboard/, { timeout: 15000 })

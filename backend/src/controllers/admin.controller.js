@@ -186,9 +186,22 @@ const getInversionesZootecnista = async (req, res) => {
   }
 }
 
-module.exports = {
-  getUsuarios, aprobarUsuario, getAnimalesInversion,
-  asignarZootecnista, getZootecnistas,
-  crearVisita, getVisitas, getAlertasSanitarias,
-  getInversionesZootecnista
+const getReportesInversion = async (req, res) => {
+  try {
+    const { id } = req.params
+    const [reportes] = await pool.query(`
+      SELECT rt.*, u.nombre as zootecnista_nombre,
+        a.codigo as animal_codigo,
+        (SELECT COUNT(*) FROM evidencias WHERE reporte_id = rt.id) as evidencias
+      FROM reportes_tecnicos rt
+      JOIN usuarios u ON rt.zootecnista_id = u.id
+      LEFT JOIN animales a ON rt.animal_id = a.id
+      WHERE rt.inversion_id = ?
+      ORDER BY rt.created_at DESC
+    `, [id])
+    res.json(reportes)
+  } catch (err) {
+    res.status(500).json({ error: 'Error obteniendo reportes' })
+  }
 }
+module.exports = { getUsuarios, aprobarUsuario, getAnimalesInversion, asignarZootecnista, getZootecnistas, crearVisita, getVisitas, getAlertasSanitarias, getInversionesZootecnista, getReportesInversion }

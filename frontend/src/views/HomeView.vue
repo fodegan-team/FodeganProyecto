@@ -11,7 +11,7 @@
     <nav class="navbar" :class="{ visible: navbarVisible }">
       <div class="navbar-inner">
         <div class="nav-logo">
-          <span class="logo-text">FODEGAN</span>
+          <img src="/images/LogoFodegan.png" alt="FODEGAN" class="logo-img" />
           <span class="logo-sub">INVERSIONES GANADERAS</span>
         </div>
         <button class="nav-user" @click="ir('login')">
@@ -1297,5 +1297,10 @@ const contacto = [
 
 .fab-opcion-label {
   padding-left: 0.9rem;
+}
+.logo-img {
+  width: 120px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
 }
 </style>

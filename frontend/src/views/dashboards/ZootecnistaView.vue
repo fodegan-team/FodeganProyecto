@@ -7,7 +7,7 @@
         <div class="sidebar-logo">
           <span class="logo-icon">🐄</span>
           <div class="logo-texts">
-            <span class="logo-text">FODEGAN</span>
+            <img src="/images/LogoFodegan.png" alt="FODEGAN" class="logo-img" />
             <span class="logo-sub">ZOOTECNISTA</span>
           </div>
         </div>
@@ -885,7 +885,6 @@ async function enviarEvidencia() {
     errorEvidencia.value = err.response?.data?.error || 'Error subiendo evidencia'
   }
 }
-
 async function enviarComentario() {
   try {
     await axios.post(`${API}/zootecnista/comentario`, {
@@ -1284,10 +1283,15 @@ onMounted(async () => {
 }
 .btn-guardar-reporte:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
 .btn-guardar-reporte:disabled { opacity: 0.4; cursor: not-allowed; }
-
 .page-title    { letter-spacing: 0.05em; }
 .section-title { letter-spacing: 0.05em; }
 .banner-nombre { letter-spacing: 0.05em; }
 .mf-nombre     { letter-spacing: 0.05em; }
 .gc-val        { letter-spacing: 0.05em; }
+.stat-prop-icon-svg { color: var(--cafe); margin-bottom: 0.5rem; }
+.logo-img {
+  width: 120px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
 </style>

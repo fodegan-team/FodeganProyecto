@@ -5,11 +5,8 @@
     <aside class="sidebar">
       <div class="sidebar-top">
         <div class="sidebar-logo">
-          <span class="logo-icon">🐄</span>
-          <div class="logo-texts">
-            <span class="logo-text">FODEGAN</span>
-            <span class="logo-sub">ADMINISTRADOR</span>
-          </div>
+          <img src="/images/LogoFodegan.png" alt="FODEGAN" class="logo-img" />
+          <span class="logo-sub">ADMINISTRADOR</span>
         </div>
       </div>
 
@@ -63,11 +60,9 @@
           </div>
         </div>
 
-        <!-- Alertas pendientes -->
         <div class="alertas-section">
           <h3 class="section-title">⚡ Requieren atención</h3>
           <div class="alertas-grid">
-
             <div class="alerta-card" v-if="fincasPendientes.length > 0" @click="seccionActiva = 'fincas'">
               <div class="alerta-icon naranja">🏡</div>
               <div>
@@ -102,7 +97,6 @@
                 <p class="alerta-sub">No hay elementos pendientes de revisión</p>
               </div>
             </div>
-
           </div>
         </div>
       </section>
@@ -137,31 +131,31 @@
                 <th>Acciones</th>
               </tr>
             </thead>
-              <tbody>
-                <tr v-for="finca in fincasFiltradas" :key="finca.id">
-                  <td>
-                    <p class="td-nombre">{{ finca.nombre }} {{ finca.apellido }}</p>
-                    <p class="td-email">{{ finca.email }}</p>
-                  </td>
-                  <td>
-                    <p class="td-nombre">{{ finca.nombre_real }}</p>
-                    <p class="td-email">{{ finca.nombre_ficticio }}</p>
-                  </td>
-                  <td>{{ finca.ubicacion }}</td>
-                  <td>{{ finca.hectareas }} ha</td>
-                  <td>{{ finca.capacidad_disponible }} / {{ finca.capacidad_total }}</td>
-                  <td>
-                    <span class="estado-badge" :class="finca.estado">{{ finca.estado }}</span>
-                  </td>
-                  <td>
-                    <div class="acciones" v-if="finca.estado === 'pendiente'">
-                      <button class="btn-aprobar" @click="aprobarFinca(finca.id)">✓ Aprobar</button>
-                      <button class="btn-rechazar" @click="abrirRechazarFinca(finca)">✗ Rechazar</button>
-                    </div>
-                    <span v-else class="td-email">—</span>
-                  </td>
-                </tr>
-              </tbody>
+            <tbody>
+              <tr v-for="finca in fincasFiltradas" :key="finca.id">
+                <td>
+                  <p class="td-nombre">{{ finca.nombre }} {{ finca.apellido }}</p>
+                  <p class="td-email">{{ finca.email }}</p>
+                </td>
+                <td>
+                  <p class="td-nombre">{{ finca.nombre_real }}</p>
+                  <p class="td-email">{{ finca.nombre_ficticio }}</p>
+                </td>
+                <td>{{ finca.ubicacion }}</td>
+                <td>{{ finca.hectareas }} ha</td>
+                <td>{{ finca.capacidad_disponible }} / {{ finca.capacidad_total }}</td>
+                <td>
+                  <span class="estado-badge" :class="finca.estado">{{ finca.estado }}</span>
+                </td>
+                <td>
+                  <div class="acciones" v-if="finca.estado === 'pendiente'">
+                    <button class="btn-aprobar" @click="aprobarFinca(finca.id)">✓ Aprobar</button>
+                    <button class="btn-rechazar" @click="abrirRechazarFinca(finca)">✗ Rechazar</button>
+                  </div>
+                  <span v-else class="td-email">—</span>
+                </td>
+              </tr>
+            </tbody>
           </table>
         </div>
       </section>
@@ -229,12 +223,16 @@
                         <button class="btn-ver-animales" @click="verAnimales(inv)">
                           {{ inversionExpandida?.id === inv.id ? '▲ Ocultar' : '▼ Animales' }}
                         </button>
-                        <button class="btn-finalizar" @click="finalizarInversion(inv.id)">⏹ Finalizar</button>
+                        <button class="btn-ver-animales" style="background:#EDE9FE;color:#6D28D9;" @click="verReportes(inv)">
+                          {{ reportesExpandidos?.id === inv.id ? '▲ Ocultar' : '▼ Reportes' }}
+                        </button>
+                        <button class="btn-finalizar" @click="abrirFinalizarInversion(inv)">⏹ Finalizar</button>
                       </template>
                       <span v-else class="td-email">—</span>
                     </div>
                   </td>
                 </tr>
+
                 <!-- Fila expandida animales -->
                 <tr v-if="inversionExpandida?.id === inv.id" class="fila-expandida">
                   <td colspan="8">
@@ -265,6 +263,45 @@
                     </div>
                   </td>
                 </tr>
+
+                <!-- Fila expandida reportes -->
+                <tr v-if="reportesExpandidos?.id === inv.id" class="fila-expandida">
+                  <td colspan="8">
+                    <div class="animales-expand" v-if="cargandoReportes">Cargando reportes...</div>
+                    <div class="animales-expand" v-else>
+                      <p class="animales-titulo">Reportes técnicos — {{ inv.nombre_ficticio }}</p>
+                      <div class="sin-animales" v-if="reportesInversion.length === 0">
+                        No hay reportes registrados aún.
+                      </div>
+                      <div class="reportes-lista-admin" v-else>
+                        <div class="reporte-admin-item" v-for="rep in reportesInversion" :key="rep.id">
+                          <div class="rai-header">
+                            <div class="rai-left">
+                              <span class="rai-tipo" :class="tipoColorReporte(rep.tipo_revision)">
+                                {{ tipoLabelReporte(rep.tipo_revision) }}
+                              </span>
+                              <span class="rai-animal" v-if="rep.animal_codigo">
+                                {{ rep.animal_codigo }}
+                              </span>
+                              <span class="rai-estado">
+                                {{ estadoAnimalLabel(rep.estado_animal) }}
+                              </span>
+                            </div>
+                            <div class="rai-right">
+                              <span class="rai-zoo">Dr. {{ rep.zootecnista_nombre }}</span>
+                              <span class="rai-fecha">{{ formatFecha(rep.created_at) }}</span>
+                              <span class="rai-evid" v-if="rep.evidencias > 0">
+                                📷 {{ rep.evidencias }} evidencia(s)
+                              </span>
+                            </div>
+                          </div>
+                          <p class="rai-obs">{{ rep.observaciones }}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+
               </template>
             </tbody>
           </table>
@@ -337,7 +374,7 @@
               <div class="zoo-avatar">
                 {{ zoo.nombre.charAt(0) }}{{ zoo.apellido.charAt(0) }}
               </div>
-              <div>
+              <div style="flex:1;">
                 <p class="zoo-nombre">{{ zoo.nombre }} {{ zoo.apellido }}</p>
                 <p class="zoo-email">{{ zoo.email }}</p>
               </div>
@@ -345,6 +382,7 @@
                 {{ zoo.aprobado ? 'Activo' : 'Pendiente' }}
               </span>
             </div>
+
             <div class="zoo-fincas" v-if="zoo.fincas && zoo.fincas.length > 0">
               <p class="zoo-fincas-titulo">Fincas asignadas:</p>
               <div class="zoo-finca-tag" v-for="f in zoo.fincas" :key="f.id">
@@ -352,10 +390,62 @@
               </div>
             </div>
             <p class="zoo-sin-fincas" v-else>Sin fincas asignadas</p>
+
+            <button class="btn-asignar-finca" @click="abrirAsignarFinca(zoo)">
+              + Asignar finca
+            </button>
           </div>
         </div>
       </section>
 
+      <!-- ══ VISITAS ══ -->
+      <section v-if="seccionActiva === 'visitas'" class="seccion">
+        <div class="section-header">
+          <h2 class="section-title">Calendario de Visitas</h2>
+        </div>
+
+        <div class="calendario-wrap">
+          <div class="calendario-nav">
+            <button class="cal-nav-btn" @click="mesAnterior">‹</button>
+            <h3 class="cal-mes-titulo">{{ nombreMes }}</h3>
+            <button class="cal-nav-btn" @click="mesSiguiente">›</button>
+          </div>
+
+          <div class="cal-leyenda">
+            <span class="leyenda-item cal-azul">Pesaje</span>
+            <span class="leyenda-item cal-verde">Vacunación</span>
+            <span class="leyenda-item cal-cyan">Revisión</span>
+            <span class="leyenda-item cal-naranja">Control Sanitario</span>
+          </div>
+
+          <div class="calendario-grid">
+            <div class="cal-dia-header" v-for="d in ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']" :key="d">{{ d }}</div>
+            <div
+              v-for="(dia, idx) in diasCalendario" :key="idx"
+              class="cal-dia-cell"
+              :class="{
+                'otro-mes':     !dia.esEsteMes,
+                'es-pasado':    dia.esPasado && dia.esEsteMes,
+                'es-hoy':       dia.esHoy,
+                'es-futuro':    !dia.esPasado && dia.esEsteMes && !dia.esHoy,
+                'tiene-visita': dia.visitas.length > 0
+              }"
+              @click="abrirModalVisita(dia)"
+            >
+              <span class="cal-num">{{ dia.numero }}</span>
+              <div class="cal-visitas">
+                <div v-for="v in dia.visitas.slice(0,2)" :key="v.id"
+                  class="cal-visita-chip" :class="'cal-' + tipoColor(v.tipo)">
+                  <span class="cal-chip-zoo">{{ v.zootecnista_nombre }}</span>
+                  <span class="cal-chip-tipo">{{ tipoLabel(v.tipo) }}</span>
+                  <span class="cal-chip-estado" :class="v.estado">● {{ v.estado }}</span>
+                </div>
+                <span v-if="dia.visitas.length > 2" class="cal-mas">+{{ dia.visitas.length - 2 }} más</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <!-- ══ CONFIGURACIÓN ══ -->
       <section v-if="seccionActiva === 'config'" class="seccion">
@@ -411,57 +501,6 @@
         </div>
       </section>
 
-      <!-- ══ VISITAS ══ -->
-      <section v-if="seccionActiva === 'visitas'" class="seccion">
-        <div class="section-header">
-          <h2 class="section-title">Calendario de Visitas</h2>
-        </div>
-
-        <div class="calendario-wrap">
-          <!-- Navegación -->
-          <div class="calendario-nav">
-            <button class="cal-nav-btn" @click="mesAnterior">‹</button>
-            <h3 class="cal-mes-titulo">{{ nombreMes }}</h3>
-            <button class="cal-nav-btn" @click="mesSiguiente">›</button>
-          </div>
-
-          <!-- Leyenda -->
-          <div class="cal-leyenda">
-            <span class="leyenda-item cal-azul">Pesaje</span>
-            <span class="leyenda-item cal-verde">Vacunación</span>
-            <span class="leyenda-item cal-cyan">Revisión</span>
-            <span class="leyenda-item cal-naranja">Control Sanitario</span>
-          </div>
-
-          <!-- Grilla -->
-          <div class="calendario-grid">
-            <div class="cal-dia-header" v-for="d in ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']" :key="d">{{ d }}</div>
-            <div
-              v-for="(dia, idx) in diasCalendario" :key="idx"
-              class="cal-dia-cell"
-              :class="{
-                'otro-mes':    !dia.esEsteMes,
-                'es-pasado':   dia.esPasado && dia.esEsteMes,
-                'es-hoy':      dia.esHoy,
-                'es-futuro':   !dia.esPasado && dia.esEsteMes && !dia.esHoy,
-                'tiene-visita': dia.visitas.length > 0
-              }"
-              @click="abrirModalVisita(dia)"
-            >
-              <span class="cal-num">{{ dia.numero }}</span>
-              <div class="cal-visitas">
-                <div v-for="v in dia.visitas.slice(0,2)" :key="v.id"
-                  class="cal-visita-chip" :class="'cal-' + tipoColor(v.tipo)">
-                  <span class="cal-chip-zoo">{{ v.zootecnista_nombre }}</span>
-                  <span class="cal-chip-tipo">{{ tipoLabel(v.tipo) }}</span>
-                  <span class="cal-chip-estado" :class="v.estado">● {{ v.estado }}</span>
-                </div>
-                <span v-if="dia.visitas.length > 2" class="cal-mas">+{{ dia.visitas.length - 2 }} más</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
     </main>
 
     <!-- ══ MODAL RECHAZAR FINCA ══ -->
@@ -508,7 +547,6 @@
           <p class="modal-sub">{{ diaSeleccionado ? formatFecha(diaSeleccionado.fecha) : '' }}</p>
 
           <div class="visita-form">
-
             <div class="vf-group">
               <label class="vf-label">Zootecnista</label>
               <div class="vf-select-wrap">
@@ -564,18 +602,15 @@
               <label class="vf-label">Notas (opcional)</label>
               <textarea v-model="visitaForm.notas" rows="2" placeholder="Instrucciones adicionales..." class="vf-textarea"></textarea>
             </div>
-
           </div>
 
           <div class="modal-btns">
             <button class="btn-secondary" @click="modalVisita = false">Cancelar</button>
-            <button class="btn-primary"
-              @click="crearVisita"
+            <button class="btn-primary" @click="crearVisita"
               :disabled="!visitaForm.zootecnista_id || !visitaForm.finca_id">
               📅 Guardar visita
             </button>
           </div>
-
         </div>
       </div>
     </Teleport>
@@ -584,7 +619,6 @@
     <Teleport to="body">
       <div class="modal-overlay" v-if="modalAnimales" @click.self="modalAnimales = false">
         <div class="modal-animales-wrap">
-          <!-- Header fijo -->
           <div class="modal-animales-header">
             <div>
               <h3 class="modal-titulo">Registrar Pesos de Animales</h3>
@@ -596,7 +630,6 @@
             <button class="modal-close" @click="modalAnimales = false">✕</button>
           </div>
 
-          <!-- Contenido con scroll -->
           <div class="modal-animales-body">
             <div class="af-header">
               <span>Código</span>
@@ -623,7 +656,6 @@
             <div class="alert-error"   v-if="errorAnimales">{{ errorAnimales }}</div>
           </div>
 
-          <!-- Footer fijo con botones -->
           <div class="modal-animales-footer">
             <button class="btn-secondary" @click="modalAnimales = false">Cancelar</button>
             <button class="btn-primary" @click="guardarAnimales" :disabled="guardandoAnimales">
@@ -633,6 +665,120 @@
         </div>
       </div>
     </Teleport>
+    <!-- ══ MODAL FINALIZAR INVERSIÓN ══ -->
+    <Teleport to="body">
+      <div class="modal-overlay" v-if="modalFinalizar" @click.self="modalFinalizar = false">
+        <div class="modal-card" style="max-width: 460px;">
+          <div class="modal-finalizar-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="1.5">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+          </div>
+          <h3 class="modal-titulo" style="text-align:center;">Finalizar Inversión</h3>
+          <p class="modal-sub" style="text-align:center; margin-bottom: 1.2rem;">
+            ¿Confirmas que la inversión de
+            <strong>{{ inversionAFinalizar?.inversor_nombre }}</strong>
+            en <strong>{{ inversionAFinalizar?.nombre_ficticio }}</strong> ha finalizado correctamente?
+          </p>
+
+          <div class="modal-finalizar-info">
+            <div class="mfi-row">
+              <span>Monto invertido</span>
+              <strong>{{ formatCOP(inversionAFinalizar?.monto_cop) }}</strong>
+            </div>
+            <div class="mfi-row">
+              <span>Animales</span>
+              <strong>{{ inversionAFinalizar?.cantidad_animales }}</strong>
+            </div>
+            <div class="mfi-row">
+              <span>Ciclo</span>
+              <strong>{{ inversionAFinalizar?.dias_ciclo }} días</strong>
+            </div>
+            <div class="mfi-row">
+              <span>Rendimiento</span>
+              <strong class="green">{{ inversionAFinalizar?.rendimiento_pct }}%</strong>
+            </div>
+          </div>
+
+          <p class="modal-finalizar-aviso">
+            ⚠ Esta acción es irreversible. La capacidad de la finca será restaurada.
+          </p>
+
+          <div class="modal-btns">
+            <button class="btn-secondary" @click="modalFinalizar = false">Cancelar</button>
+            <button class="btn-finalizar-modal" @click="confirmarFinalizarInversion">
+              ✓ Confirmar finalización
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- ══ MODAL ASIGNAR FINCA ══ -->
+    <Teleport to="body">
+      <div class="modal-overlay" v-if="modalAsignarFinca" @click.self="modalAsignarFinca = false">
+        <div class="modal-animales-wrap" style="max-width: 480px;">
+          <!-- Header fijo -->
+          <div class="modal-animales-header">
+            <div>
+              <h3 class="modal-titulo">Asignar Finca</h3>
+              <p class="modal-sub">
+                Asignar una finca a <strong>{{ zootecnistaAsignar?.nombre }} {{ zootecnistaAsignar?.apellido }}</strong>
+              </p>
+            </div>
+            <button class="modal-close" @click="modalAsignarFinca = false">✕</button>
+          </div>
+
+          <!-- Contenido con scroll -->
+          <div class="modal-animales-body">
+            <div class="asignar-fincas-lista">
+              <div
+                v-for="f in todasFincas.filter(f => f.estado === 'aprobada')"
+                :key="f.id"
+                class="asignar-finca-item"
+                :class="{ selected: fincaAsignarId === f.id }"
+                @click="fincaAsignarId = f.id">
+                <div class="afi-icon">🌿</div>
+                <div class="afi-info">
+                  <p class="afi-nombre">{{ f.nombre_ficticio }}</p>
+                  <p class="afi-real">{{ f.nombre_real }}</p>
+                  <p class="afi-propietario">Propietario: {{ f.nombre }} {{ f.apellido }}</p>
+                </div>
+                <div class="afi-stats">
+                  <div class="afi-stat">
+                    <span class="afi-stat-val">{{ f.hectareas }}</span>
+                    <span class="afi-stat-lbl">ha</span>
+                  </div>
+                  <div class="afi-stat">
+                    <span class="afi-stat-val">{{ f.capacidad_disponible }}</span>
+                    <span class="afi-stat-lbl">disp.</span>
+                  </div>
+                </div>
+                <div class="afi-check" v-if="fincaAsignarId === f.id">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                </div>
+              </div>
+
+              <div class="asignar-empty" v-if="todasFincas.filter(f => f.estado === 'aprobada').length === 0">
+                <p>No hay fincas aprobadas disponibles</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer fijo -->
+          <div class="modal-animales-footer">
+            <button class="btn-secondary" @click="modalAsignarFinca = false">Cancelar</button>
+            <button class="btn-primary" @click="confirmarAsignarFinca" :disabled="!fincaAsignarId">
+              ✓ Asignar finca
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
   </div>
 </template>
 
@@ -667,6 +813,12 @@ const todosUsuarios    = ref([])
 const zootecnistas     = ref([])
 const config           = ref(null)
 const todasVisitas     = ref([])
+const reportesInversion  = ref([])
+const cargandoReportes   = ref(false)
+const reportesExpandidos = ref(null)
+const modalAsignarFinca  = ref(false)
+const zootecnistaAsignar = ref(null)
+const fincaAsignarId     = ref('')
 
 const filtroFincas      = ref('todas')
 const filtroInversiones = ref('todas')
@@ -723,6 +875,8 @@ const diaSeleccionado        = ref(null)
 const modalVisita            = ref(false)
 const inversionesZootecnista = ref([])
 const cargandoInversiones    = ref(false)
+const modalFinalizar     = ref(false)
+const inversionAFinalizar = ref(null)
 
 const visitaForm = reactive({
   zootecnista_id: '',
@@ -786,6 +940,18 @@ function tipoLabel(tipo) {
 function tipoColor(tipo) {
   const map = { pesaje: 'azul', vacunacion: 'verde', revision: 'cyan', control_sanitario: 'naranja' }
   return map[tipo] || 'azul'
+}
+function tipoLabelReporte(tipo) {
+  const map = { control_sanitario: 'Control Sanitario', vacunacion: 'Vacunación', control_peso: 'Control de Peso', revision_general: 'Revisión General' }
+  return map[tipo] || tipo
+}
+function tipoColorReporte(tipo) {
+  const map = { control_sanitario: 'rep-rojo', vacunacion: 'rep-verde', control_peso: 'rep-azul', revision_general: 'rep-naranja' }
+  return map[tipo] || 'rep-gris'
+}
+function estadoAnimalLabel(estado) {
+  const map = { excelente: 'Excelente', bueno: 'Bueno', regular: 'Regular', enfermo: 'Enfermo', muerto: 'Muerto' }
+  return map[estado] || estado
 }
 
 // ── Funciones calendario ──────────────────────────
@@ -926,10 +1092,15 @@ async function confirmarRechazarInversion() {
   }
 }
 
-async function finalizarInversion(id) {
-  if (!confirm('¿Confirmas que esta inversión ha finalizado?')) return
+function abrirFinalizarInversion(inv) {
+  inversionAFinalizar.value = inv
+  modalFinalizar.value = true
+}
+
+async function confirmarFinalizarInversion() {
   try {
-    await axios.put(`${API}/inversiones/${id}/finalizar`, {}, { headers: headers.value })
+    await axios.put(`${API}/inversiones/${inversionAFinalizar.value.id}/finalizar`, {}, { headers: headers.value })
+    modalFinalizar.value = false
     await cargarTodo()
   } catch (err) {
     alert(err.response?.data?.error || 'Error finalizando inversión')
@@ -992,6 +1163,44 @@ function abrirRegistroAnimales(inv) {
   exitoAnimales.value = ''
   errorAnimales.value = ''
   modalAnimales.value = true
+}
+
+async function verReportes(inv) {
+  if (reportesExpandidos.value?.id === inv.id) {
+    reportesExpandidos.value = null
+    reportesInversion.value  = []
+    return
+  }
+  reportesExpandidos.value = inv
+  cargandoReportes.value   = true
+  try {
+    const { data } = await axios.get(`${API}/admin/inversiones/${inv.id}/reportes`, { headers: headers.value })
+    reportesInversion.value = data
+  } catch {}
+  cargandoReportes.value = false
+}
+
+async function abrirAsignarFinca(zoo) {
+  zootecnistaAsignar.value = zoo
+  fincaAsignarId.value     = ''
+  modalAsignarFinca.value  = true
+}
+
+async function confirmarAsignarFinca() {
+  console.log('finca_id:', fincaAsignarId.value, typeof fincaAsignarId.value)
+  console.log('zootecnista_id:', zootecnistaAsignar.value.id)
+  if (!fincaAsignarId.value) return alert('Selecciona una finca')
+  try {
+    await axios.post(`${API}/admin/asignar-zootecnista`, {
+      zootecnista_id: zootecnistaAsignar.value.id,
+      finca_id:       fincaAsignarId.value
+    }, { headers: headers.value })
+    modalAsignarFinca.value = false
+    await cargarZootecnistas()
+  } catch (err) {
+    console.error('Error:', err.response?.data)
+    alert(err.response?.data?.error || 'Error asignando finca')
+  }
 }
 
 async function guardarAnimales() {
@@ -1588,4 +1797,109 @@ onMounted(cargarTodo)
   border: none;
   font-family: 'Open Sans', sans-serif;
 }
+.logo-img {
+  width: 120px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+/* Reportes admin */
+.reportes-lista-admin { display: flex; flex-direction: column; gap: 0.8rem; }
+.reporte-admin-item {
+  background: var(--blanco); border-radius: 10px; padding: 1rem;
+  border: 1px solid var(--border);
+}
+.rai-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; flex-wrap: wrap; gap: 0.5rem; }
+.rai-left   { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.rai-right  { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
+.rai-tipo {
+  font-size: 0.72rem; font-weight: 700;
+  padding: 0.25rem 0.7rem; border-radius: 100px;
+}
+.rai-tipo.rep-rojo    { background: #FEE2E2; color: #991B1B; }
+.rai-tipo.rep-verde   { background: #D1FAE5; color: #065F46; }
+.rai-tipo.rep-azul    { background: #DBEAFE; color: #1E40AF; }
+.rai-tipo.rep-naranja { background: #FEF3C7; color: #92400E; }
+.rai-tipo.rep-gris    { background: #F3F4F6; color: #374151; }
+.rai-animal { font-family: monospace; font-size: 0.78rem; font-weight: 700; color: var(--gris); background: #F3F4F6; padding: 0.2rem 0.6rem; border-radius: 6px; }
+.rai-estado { font-size: 0.72rem; color: var(--muted); }
+.rai-zoo    { font-size: 0.75rem; font-weight: 600; color: var(--texto); }
+.rai-fecha  { font-size: 0.72rem; color: var(--muted); }
+.rai-evid   { font-size: 0.72rem; color: #7C3AED; }
+.rai-obs    { font-size: 0.82rem; color: var(--texto); line-height: 1.6; }
+.modal-finalizar-icon {
+  display: flex; justify-content: center; margin-bottom: 1rem;
+  background: #F0FDF4; width: 72px; height: 72px; border-radius: 50%;
+  align-items: center; margin: 0 auto 1rem;
+}
+.modal-finalizar-info {
+  background: #F9FAFB; border-radius: 10px; padding: 1rem;
+  margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.6rem;
+}
+.mfi-row {
+  display: flex; justify-content: space-between;
+  font-size: 0.85rem; color: var(--muted);
+}
+.mfi-row strong { color: var(--texto); }
+.modal-finalizar-aviso {
+  font-size: 0.78rem; color: #D97706;
+  background: #FEF3C7; border-radius: 8px;
+  padding: 0.6rem 0.9rem; margin-bottom: 1rem;
+}
+.btn-finalizar-modal {
+  all: unset; cursor: pointer;
+  background: #16A34A; color: #fff;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 0.88rem; font-weight: 600;
+  padding: 0.75rem 1.6rem; border-radius: 100px;
+  transition: opacity 0.2s;
+}
+.btn-finalizar-modal:hover { opacity: 0.88; }
+.btn-asignar-finca {
+  all: unset; cursor: pointer;
+  display: block; width: 100%; box-sizing: border-box;
+  text-align: center; margin-top: 0.8rem;
+  padding: 0.6rem; border-radius: 8px;
+  border: 1.5px dashed var(--border);
+  font-size: 0.8rem; font-weight: 600; color: var(--muted);
+  transition: all 0.2s; font-family: 'Open Sans', sans-serif;
+}
+.btn-asignar-finca:hover {
+  border-color: var(--gris); color: var(--gris);
+  background: #F9FAFB;
+}
+/* Asignar finca */
+.asignar-fincas-lista { display: flex; flex-direction: column; gap: 0.6rem; margin: 1.2rem 0; max-height: 340px; overflow-y: auto; }
+.asignar-finca-item {
+  display: flex; align-items: center; gap: 0.8rem;
+  padding: 0.9rem 1rem; border-radius: 12px;
+  border: 2px solid var(--border); cursor: pointer;
+  transition: all 0.2s; background: var(--blanco);
+  position: relative;
+}
+.asignar-finca-item:hover { border-color: var(--gris-mid); background: #F9FAFB; }
+.asignar-finca-item.selected { border-color: var(--gris); background: #F3F4F6; }
+.afi-icon { font-size: 1.6rem; flex-shrink: 0; }
+.afi-info { flex: 1; }
+.afi-nombre { font-weight: 700; color: var(--texto); font-size: 0.88rem; }
+.afi-real   { font-size: 0.75rem; color: var(--muted); margin-top: 0.1rem; }
+.afi-propietario { font-size: 0.7rem; color: var(--muted); margin-top: 0.2rem; }
+.afi-stats  { display: flex; gap: 0.8rem; flex-shrink: 0; }
+.afi-stat   { text-align: center; }
+.afi-stat-val { font-family: 'Anton', sans-serif; font-size: 1rem; color: var(--texto); display: block; }
+.afi-stat-lbl { font-size: 0.6rem; color: var(--muted); text-transform: uppercase; }
+.afi-check {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--gris); display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.asignar-empty { text-align: center; padding: 1.5rem; color: var(--muted); font-size: 0.82rem; }
+.modal-close {
+  all: unset; cursor: pointer;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 0.9rem;
+  transition: background 0.2s; flex-shrink: 0;
+}
+.modal-close:hover { background: rgba(255,255,255,0.25); }
 </style>

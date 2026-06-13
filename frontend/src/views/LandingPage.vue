@@ -189,4 +189,9 @@ onUnmounted(() => timers.forEach(clearTimeout))
   .cta-group { flex-direction: column; width: 100%; max-width: 300px; }
   .btn { justify-content: center; }
 }
+.logo-img {
+  width: 120px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
 </style>

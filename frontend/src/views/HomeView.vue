@@ -486,6 +486,13 @@ function irA(ruta) {
   router.push(ruta)
 }
 
+function ir(ruta) {
+  fabAbierto.value = false
+  if (ruta === 'register') router.push('/register?rol=1')
+  else if (ruta === 'login') router.push('/login')
+  else router.push(ruta)
+}
+
 let observer
 
 onMounted(() => {

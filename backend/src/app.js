@@ -69,7 +69,6 @@ server.use((err, _req, res, _next) => {
 })
 
 const path = require('path')
-
 // Servir frontend en producción
 if (process.env.NODE_ENV === 'production') {
   server.use(express.static(path.join(__dirname, '../../frontend/dist')))

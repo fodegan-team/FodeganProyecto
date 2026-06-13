@@ -1,0 +1,1 @@
+var e=`/images/LogoFodegan.png`;export{e as t};

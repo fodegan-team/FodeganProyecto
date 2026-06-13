@@ -617,7 +617,7 @@ import FotoPerfil from '@/components/FotoPerfil.vue'
 
 const router  = useRouter()
 const auth    = useAuthStore()
-const API     = 'http://localhost:3000/api'
+const API = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
 const headers = computed(() => ({ Authorization: `Bearer ${auth.token}` }))
 
 // ── Nav ───────────────────────────────────────────

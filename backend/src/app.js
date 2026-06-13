@@ -68,6 +68,16 @@ server.use((err, _req, res, _next) => {
   res.status(500).json({ error: 'Error interno del servidor' })
 })
 
+const path = require('path')
+
+// Servir frontend en producción
+if (process.env.NODE_ENV === 'production') {
+  server.use(express.static(path.join(__dirname, '../../frontend/dist')))
+  server.get('*', (_req, res) => {
+    res.sendFile(path.join(__dirname, '../../frontend/dist/index.html'))
+  })
+}
+
 server.listen(PORT, () => {
   console.log(`✅ FODEGAN API corriendo en http://localhost:${PORT}`)
 })

@@ -69,13 +69,12 @@ server.use((err, _req, res, _next) => {
 })
 
 const path = require('path')
-// Servir frontend en producción
-if (process.env.NODE_ENV === 'production') {
-  server.use(express.static(path.join(__dirname, '../../frontend/dist')))
-  server.get('*', (_req, res) => {
-    res.sendFile(path.join(__dirname, '../../frontend/dist/index.html'))
-  })
-}
+
+// Servir frontend
+server.use(express.static(path.join(__dirname, '../public')))
+server.get('*', (_req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'))
+})
 
 server.listen(PORT, () => {
   console.log(`✅ FODEGAN API corriendo en http://localhost:${PORT}`)

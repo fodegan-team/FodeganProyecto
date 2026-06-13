@@ -22,9 +22,11 @@ export const useAuthStore = defineStore('auth', () => {
         { withCredentials: true }
       )
       token.value   = data.accessToken
+      // Nunca guardar foto_perfil en localStorage
+      const { foto_perfil, ...usuarioSinFoto } = data.usuario
       usuario.value = data.usuario
       localStorage.setItem('token',   data.accessToken)
-      localStorage.setItem('usuario', JSON.stringify(data.usuario))
+      localStorage.setItem('usuario', JSON.stringify(usuarioSinFoto))
       return { ok: true, rol: data.usuario.rol }
     } catch (err) {
       error.value = err.response?.data?.error || 'Error al iniciar sesión'
@@ -65,5 +67,15 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  return { usuario, token, cargando, error, estaAutenticado, rol, login, register, logout }
+
+  function actualizarFoto(foto_base64) {
+    if (usuario.value) {
+      usuario.value = { ...usuario.value, foto_perfil: foto_base64 }
+      // Guardar sin la foto en localStorage
+      const { foto_perfil, ...usuarioSinFoto } = usuario.value
+      localStorage.setItem('usuario', JSON.stringify(usuarioSinFoto))
+    }
+  }
+
+  return { usuario, token, cargando, error, estaAutenticado, rol, login, register, logout, actualizarFoto }
 })

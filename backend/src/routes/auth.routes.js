@@ -2,7 +2,10 @@ const express  = require('express')
 const { body } = require('express-validator')
 const router   = express.Router()
 
-const { register, login, logout, refreshToken, actualizarPerfil } = require('../controllers/auth.controller')
+const { 
+  register, login, logout, refreshToken,
+  subirFotoPerfil, getPerfil, updatePerfil
+} = require('../controllers/auth.controller')
 const { verificarToken } = require('../middlewares/auth.middleware')
 const { validar }        = require('../middlewares/validate.middleware')
 
@@ -22,11 +25,13 @@ const validarRegistroBase = [
   validar
 ]
 
-router.post('/register', validarRegistroBase, register)
-router.post('/login',    validarLogin,        login)
-router.post('/logout',   verificarToken,      logout)
-router.post('/refresh',                       refreshToken)
-router.get('/me',        verificarToken, (req, res) => res.json({ usuario: req.usuario }))
-router.put('/perfil',    verificarToken,      actualizarPerfil)
+router.post('/register',    validarRegistroBase, register)
+router.post('/login',       validarLogin,        login)
+router.post('/logout',      verificarToken,      logout)
+router.post('/refresh',                          refreshToken)
+router.get('/me',           verificarToken, (req, res) => res.json({ usuario: req.usuario }))
+router.get('/perfil',       verificarToken,      getPerfil)
+router.put('/perfil',       verificarToken,      updatePerfil)
+router.post('/foto-perfil', verificarToken,      subirFotoPerfil)
 
 module.exports = router

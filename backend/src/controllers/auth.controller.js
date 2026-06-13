@@ -130,12 +130,13 @@ const login = async (req, res) => {
       message: 'Login exitoso',
       accessToken,
       usuario: {
-        id:       usuario.id,
-        nombre:   usuario.nombre,
-        apellido: usuario.apellido,
-        email:    usuario.email,
-        rol:      usuario.rol,
-        rol_id:   usuario.rol_id
+        id:         usuario.id,
+        nombre:     usuario.nombre,
+        apellido:   usuario.apellido,
+        email:      usuario.email,
+        rol:        usuario.rol,
+        rol_id:     usuario.rol_id,
+        foto_perfil: usuario.foto_perfil || null
       }
     })
   } catch (err) {
@@ -176,22 +177,43 @@ const refreshToken = async (req, res) => {
   }
 }
 
-// ── ACTUALIZAR PERFIL ─────────────────────────────
-const actualizarPerfil = async (req, res) => {
+const getPerfil = async (req, res) => {
   try {
-    const { nombre, apellido, telefono, ciudad } = req.body
-    await pool.query(
-      'UPDATE usuarios SET nombre=?, apellido=?, telefono=?, ciudad=?, updated_at=NOW() WHERE id=?',
-      [nombre, apellido, telefono, ciudad, req.usuario.id]
-    )
-    const [updated] = await pool.query(
-      'SELECT id, nombre, apellido, email, telefono, ciudad, rol_id FROM usuarios WHERE id=?',
+    const [usuarios] = await pool.query(
+      'SELECT id, nombre, apellido, email, telefono, cedula, ciudad, rol_id, aprobado, foto_perfil FROM usuarios WHERE id = ?',
       [req.usuario.id]
     )
-    return res.json({ message: 'Perfil actualizado', usuario: updated[0] })
+    res.json(usuarios[0])
   } catch (err) {
-    return res.status(500).json({ error: 'Error actualizando perfil' })
+    res.status(500).json({ error: 'Error obteniendo perfil' })
   }
 }
 
-module.exports = { register, login, logout, refreshToken, actualizarPerfil }
+const updatePerfil = async (req, res) => {
+  try {
+    const { nombre, apellido, telefono, ciudad } = req.body
+    await pool.query(
+      'UPDATE usuarios SET nombre=?, apellido=?, telefono=?, ciudad=? WHERE id=?',
+      [nombre, apellido, telefono, ciudad, req.usuario.id]
+    )
+    res.json({ message: 'Perfil actualizado correctamente' })
+  } catch (err) {
+    res.status(500).json({ error: 'Error actualizando perfil' })
+  }
+}
+
+const subirFotoPerfil = async (req, res) => {
+  try {
+    const { foto_base64 } = req.body
+    if (!foto_base64) return res.status(400).json({ error: 'Foto requerida' })
+    await pool.query(
+      'UPDATE usuarios SET foto_perfil = ? WHERE id = ?',
+      [foto_base64, req.usuario.id]
+    )
+    res.json({ message: 'Foto actualizada correctamente', foto_perfil: foto_base64 })
+  } catch (err) {
+    res.status(500).json({ error: 'Error subiendo foto' })
+  }
+}
+
+module.exports = { register, login, logout, refreshToken, getPerfil, updatePerfil, subirFotoPerfil }

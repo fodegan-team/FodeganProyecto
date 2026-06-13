@@ -14,9 +14,7 @@
       </div>
 
       <div class="sidebar-user">
-        <div class="user-avatar">
-          {{ auth.usuario?.nombre?.charAt(0) }}{{ auth.usuario?.apellido?.charAt(0) }}
-        </div>
+        <FotoPerfil color="#0C4A6E" />
         <div class="user-info">
           <p class="user-name">{{ auth.usuario?.nombre }} {{ auth.usuario?.apellido }}</p>
           <p class="user-rol">Zootecnista</p>
@@ -615,6 +613,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
 import axios from 'axios'
+import FotoPerfil from '@/components/FotoPerfil.vue'
 
 const router  = useRouter()
 const auth    = useAuthStore()

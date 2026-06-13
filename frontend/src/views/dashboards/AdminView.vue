@@ -11,7 +11,7 @@
       </div>
 
       <div class="sidebar-user">
-        <div class="user-avatar">AD</div>
+        <FotoPerfil color="#374151" />
         <div class="user-info">
           <p class="user-name">{{ auth.usuario?.nombre }}</p>
           <p class="user-rol">Administrador</p>
@@ -787,6 +787,7 @@ import { ref, computed, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
 import axios from 'axios'
+import FotoPerfil from '@/components/FotoPerfil.vue'
 
 const router = useRouter()
 const auth   = useAuthStore()
